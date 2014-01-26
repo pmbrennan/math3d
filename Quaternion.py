@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
 # Disable some pylint messages
-# pylint: disable=C0103
-# disable=C0103,R0201,W0212,R0904,W0511
+# pylint: disable=C0103,R0201,W0212,R0904,W0511
 # C0103 : Invalid name "%s" (should match %s)
 # W0212 : Access to a protected member %s of a client class
 # R0201 : Method could be a function
@@ -13,7 +12,7 @@
 Quaternion definition.
 """
 
-#import math
+import math
 import unittest
 
 from Vector import Vector
@@ -100,13 +99,16 @@ class Quaternion:
         return r
 
     def mul1(self, q):
-        """Multiplication Algorithm 1:"""
+        """Multiplication Algorithm 1:
+        This is a very nice definition of the quaternion multiplication
+        operator, but it is terribly inefficient."""
         s = self._s * q._s - self._v.dot(q._v)
         v = q._v.mults(self._s) + self._v.mults(q._s) + self._v.cross(q._v)
         return Quaternion.fromScalarVector(s, v)
 
     def mul2(self, q):
-        """Multiplication Algorithm 2:"""
+        """Multiplication Algorithm 2: This is over 3x faster then
+        mul1."""
         s = (self._s * q._s - self._v[0] * q._v[0] - 
              self._v[1] * q._v[1] - self._v[2] * q._v[2])
         a = (self._s * q._v[0] + self._v[0] * q._s + 
@@ -116,6 +118,32 @@ class Quaternion:
         c = (self._s * q._v[2] + self._v[0] * q._v[1] - 
              self._v[1] * q._v[0] + self._v[2] * q._s)
         return Quaternion(s, a, b, c)
+
+    def mulq(self, q):
+        "Multiply two quaternions and return a new quaternion product."
+        s = (self._s * q._s - self._v[0] * q._v[0] - 
+             self._v[1] * q._v[1] - self._v[2] * q._v[2])
+        a = (self._s * q._v[0] + self._v[0] * q._s + 
+             self._v[1] * q._v[2] - self._v[2] * q._v[1])
+        b = (self._s * q._v[1] - self._v[0] * q._v[2] + 
+             self._v[1] * q._s + self._v[2] * q._v[0])
+        c = (self._s * q._v[2] + self._v[0] * q._v[1] - 
+             self._v[1] * q._v[0] + self._v[2] * q._s)
+        return Quaternion(s, a, b, c)
+
+    def conj(self):
+        'return the conjugate of a quaternion.'
+        return Quaternion(self._s, -self._v[0], -self._v[1], -self._v[2])
+
+    def norm(self):
+        'return the norm of a quaternion.'
+        return math.sqrt(sum([x*x for x in self._v]) + self._s * self._s)
+
+    def normalize(self):
+        'reset the quaternion so that it has norm = 1'
+        n_reciprocal = 1.0 / self.norm()
+        self._s = self._s * n_reciprocal
+        self._v.scale(n_reciprocal)
 
 ########################################################################
 # Unit tests for Quaternions
@@ -222,7 +250,6 @@ class QuaternionTest(unittest.TestCase):
         negj = j.mults(-1)
         negk = k.mults(-1)
 
-
         assert(i.mul2(i) == neg1)          # i^2 == -1
         assert(j.mul2(j) == neg1)          # j^2 == -1
         assert(k.mul2(k) == neg1)          # k^2 == -1
@@ -236,8 +263,60 @@ class QuaternionTest(unittest.TestCase):
         assert(k.mul2(j) == negi)          # kj == -i
         assert(i.mul2(k) == negj)          # ik == -j
 
+    def testMulq4(self):
+        'Test Quaternion multiplication'
+        q1 = Quaternion(-2, 0, 0, 0)
+        q2 = Quaternion(5, 0, 0, 0)
+
+        assert(q1.mulq(q2).compare([-10, 0, 0, 0]))
+
+        q1 = Quaternion(1, 2, 3, 4)
+        q2 = Quaternion(4, 3, 2, 1)
+        
+        assert(q1.mulq(q2) == Quaternion(-12, 6, 24, 12))
+
+        qa = Quaternion(1, 2, 3, 4)
+        qb = Quaternion(2, 3, 4, 5)
+        assert qa.mulq(qb).compare([-36, 6, 12, 12])
+
+        neg1 = Quaternion(-1, 0, 0, 0)
+        i = Quaternion(0, 1, 0, 0)
+        j = Quaternion(0, 0, 1, 0)
+        k = Quaternion(0, 0, 0, 1)
+        negi = i.mults(-1)
+        negj = j.mults(-1)
+        negk = k.mults(-1)
+
+        assert(i.mulq(i) == neg1)          # i^2 == -1
+        assert(j.mulq(j) == neg1)          # j^2 == -1
+        assert(k.mulq(k) == neg1)          # k^2 == -1
+        assert(i.mulq(j).mulq(k) == neg1)  # ijk == -1
+
+        assert(i.mulq(j) == k)             # ij == k
+        assert(j.mulq(k) == i)             # jk == i
+        assert(k.mulq(i) == j)             # ki == j
+
+        assert(j.mulq(i) == negk)          # ji == -k
+        assert(k.mulq(j) == negi)          # kj == -i
+        assert(i.mulq(k) == negj)          # ik == -j
+
     def testPrint(self):
         'Test printing functionality'
         q = Quaternion(1, 2, 3, 4)
         assert q.__str__() == '[ 1.000000, [ 2.000000, 3.000000, 4.000000 ] ]'
+
+    def testConjugate(self):
+        q1 = Quaternion(1, 2, 3, 4)
+        assert q1.conj().compare([1, -2, -3, -4])
+        q2 = q1.conj()
+        assert q1.mulq(q2).compare([30, 0, 0, 0])
+
+    def testNorm(self):
+        q1 = Quaternion(1, 4, 4, -4)
+        assert q1.norm() == 7
+
+        q2 = Quaternion(1, 4, 4, -4)
+        q2.normalize()
+        assert q2.norm() == 1
+
     

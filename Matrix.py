@@ -9,7 +9,7 @@
 # W0511 : TODO/FIXME/XXX
 
 """
-Vector definition.
+Matrix definition.
 """
 
 import unittest
