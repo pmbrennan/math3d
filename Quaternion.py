@@ -107,7 +107,8 @@ class Quaternion:
         return Quaternion.fromScalarVector(s, v)
 
     def mul2(self, q):
-        """Multiplication Algorithm 2: This is over 3x faster then
+        """Multiplication Algorithm 2: This is a much more efficient
+        implementation of quaternion multiplication. It isover 3x faster than
         mul1."""
         s = (self._s * q._s - self._v[0] * q._v[0] - 
              self._v[1] * q._v[1] - self._v[2] * q._v[2])
@@ -144,6 +145,26 @@ class Quaternion:
         n_reciprocal = 1.0 / self.norm()
         self._s = self._s * n_reciprocal
         self._v.scale(n_reciprocal)
+
+    def inverse(self):
+        """Invert the quaternion and return the inverse.
+        inverse = conjugate / (norm^2)
+        """
+        # TODO: Write unit test for this.
+        n = self.norm()
+        c = self.conj()
+        d = 1.0 / (n * n)
+        c.scale(d)
+        return c
+
+    def invert(self):
+        'Invert in place.'
+        # TODO: Write unit test for this.
+        n = self.norm()
+        d = 1.0 / (n * n)
+        for i in range(0,3) : self._v[i] *= -d
+        self._s *= d
+
 
 ########################################################################
 # Unit tests for Quaternions
