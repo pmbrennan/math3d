@@ -150,7 +150,6 @@ class Quaternion:
         """Invert the quaternion and return the inverse.
         inverse = conjugate / (norm^2)
         """
-        # TODO: Write unit test for this.
         n = self.norm()
         c = self.conj()
         d = 1.0 / (n * n)
@@ -159,7 +158,6 @@ class Quaternion:
 
     def invert(self):
         'Invert in place.'
-        # TODO: Write unit test for this.
         n = self.norm()
         d = 1.0 / (n * n)
         for i in range(0,3) : self._v[i] *= -d
@@ -201,6 +199,12 @@ class QuaternionTest(unittest.TestCase):
         q1 = Quaternion(1, 2, 3, 4)
         q2 = Quaternion(5, 6, 7, 8)
         assert q1 + q2 == Quaternion(6, 8, 10, 12)
+
+        qa = Quaternion(2, -2, 3, -4)
+        qb = Quaternion(1, -2, 5, -6)
+        
+        assert qa + qb == Quaternion(3, -4, 8, -10)
+        assert qa - qb == Quaternion(1, 0, -2, 2)
         
     def testSub(self):
         'Test quaternion subtraction.'
@@ -236,6 +240,12 @@ class QuaternionTest(unittest.TestCase):
         qb = Quaternion(2, 3, 4, 5)
         assert qa.mul1(qb).compare([-36, 6, 12, 12])
         assert qa.mul2(qb).compare([-36, 6, 12, 12])
+
+        qa = Quaternion(2, -2, 3, -4)
+        qb = Quaternion(1, -2, 5, -6)
+
+        assert qb.mulq(qa).compare([-41, -8, 17, -12])
+        assert qa.mulq(qb).compare([-41, -4, 9, -20])
 
     def testMul2(self):
         'Verify that Quaternion obeys the basic laws of quaternions.'
@@ -339,5 +349,14 @@ class QuaternionTest(unittest.TestCase):
         q2 = Quaternion(1, 4, 4, -4)
         q2.normalize()
         assert q2.norm() == 1
+
+    def testInvert(self):
+        q1 = Quaternion(1, 2, 3, 4)
+        q2 = q1.inverse()
+        assert q1 != q2
+        q1.invert()
+        assert q1 == q2
+        assert q1.compare([1.0/30.0, -2.0/30.0, -3.0/30.0, -4.0/30.0])
+
 
     
