@@ -9,7 +9,7 @@
 # W0511 : TODO/FIXME/XXX
 
 """
-Quaternion definition.
+Quaternion definitions and useful utilities.
 """
 
 import math
@@ -41,10 +41,10 @@ class Quaternion:
         self._v = Vector(a, b, c)
 
     @staticmethod
-    def fromScalarVector(s, v):
+    def fromScalarVector(scalar, vector):
         """Define a quaternion from a scalar and a vector."""
         # TODO: Refactor for performance.
-        return Quaternion(s, v[0], v[1], v[2])
+        return Quaternion(scalar, vector[0], vector[1], vector[2])
 
     def __str__(self):
         return '[ %s, %s ]' % (self._printSpec % self._s, self._v)
@@ -163,6 +163,17 @@ class Quaternion:
         for i in range(0,3) : self._v[i] *= -d
         self._s *= d
 
+    @staticmethod
+    def forRotation(axis, angle):
+        """
+        Return the quaternion which represents a rotation about
+        the provided axis (vector) by angle (in radians).
+        """
+        # TODO: Write unit test and verify.
+        half_angle = angle * 0.5
+        c = math.cos(half_angle)
+        s = math.sin(half_angle)
+        return Quaternion.fromScalarVector(c, axis.muls(s))
 
 ########################################################################
 # Unit tests for Quaternions
