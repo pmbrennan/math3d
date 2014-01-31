@@ -30,6 +30,7 @@ hopefully a greater!) level of understanding.
 
 from Vector import *
 from Matrix import *
+from CoordinateSys import *
 from Quaternion import *
 from Quaternions import *
 

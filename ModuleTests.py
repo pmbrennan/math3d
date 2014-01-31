@@ -24,6 +24,7 @@ import unittest
 from Vector import Vector, VectorTest
 from Matrix import Matrix, MatrixTest
 from Quaternion import Quaternion, QuaternionTest
+from CoordinateSys import CoordinateSys, CoordinateSysTest
 
 ########################################################################
 
