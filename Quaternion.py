@@ -160,7 +160,8 @@ class Quaternion:
         'Invert in place.'
         n = self.norm()
         d = 1.0 / (n * n)
-        for i in range(0,3) : self._v[i] *= -d
+        for i in range(0,3) : 
+            self._v[i] *= -d
         self._s *= d
 
     @staticmethod
@@ -169,11 +170,11 @@ class Quaternion:
         Return the quaternion which represents a rotation about
         the provided axis (vector) by angle (in radians).
         """
-        # TODO: Write unit test and verify.
+        # TODO enforce requirement that axis must be a unit vector.
         half_angle = angle * 0.5
         c = math.cos(half_angle)
         s = math.sin(half_angle)
-        return Quaternion.fromScalarVector(c, axis.muls(s))
+        return Quaternion.fromScalarVector(c, axis.mults(s))
 
 ########################################################################
 # Unit tests for Quaternions
@@ -348,12 +349,14 @@ class QuaternionTest(unittest.TestCase):
         assert q.__str__() == '[ 1.000000, [ 2.000000, 3.000000, 4.000000 ] ]'
 
     def testConjugate(self):
+        'Test conjugate operation.'
         q1 = Quaternion(1, 2, 3, 4)
         assert q1.conj().compare([1, -2, -3, -4])
         q2 = q1.conj()
         assert q1.mulq(q2).compare([30, 0, 0, 0])
 
     def testNorm(self):
+        'Test norm function'
         q1 = Quaternion(1, 4, 4, -4)
         assert q1.norm() == 7
 
@@ -362,6 +365,7 @@ class QuaternionTest(unittest.TestCase):
         assert q2.norm() == 1
 
     def testInvert(self):
+        'Test Quaternion inversion.'
         q1 = Quaternion(1, 2, 3, 4)
         q2 = q1.inverse()
         assert q1 != q2
@@ -369,5 +373,21 @@ class QuaternionTest(unittest.TestCase):
         assert q1 == q2
         assert q1.compare([1.0/30.0, -2.0/30.0, -3.0/30.0, -4.0/30.0])
 
+    def testAlternateRepresentation(self):
+        'Test the alternate representation of the quaternion.'
+        q = Quaternion(3, -4, 5, -7)
+        s = q.str2()
+        assert s == '3 - 4.0i + 5.0j - 7.0k', s
+
+    def testRotationalQuaternion(self):
+        'Test the quaternion representation of a rotation.'
+        axis = Vector(1, 1, 1).normalize()
+        angle = 2.0 # radians!
+        q1 = Quaternion.forRotation(axis, angle)
+        
+        vv = math.sin(1.0) / (math.sqrt(3.0))
+        cc = math.cos(1.0)
+        q2 = Quaternion(cc, vv, vv, vv)
+        assert q1.__str__() == q2.__str__(), '%s %s'%(q1,q2)
 
     

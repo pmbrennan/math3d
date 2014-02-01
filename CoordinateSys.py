@@ -29,6 +29,7 @@ class CoordinateSys:
                   expressed in terms of the parent coordinate system.
            origin: the position of the origin of this coordinate system,
                 expressed in terms of the parent coordinate system."""
+
         if name is not None:
             self._name = name
         else:
@@ -102,7 +103,7 @@ class CoordinateSys:
            parent coordinate system."""
         if self._basisTranspose is None:
             self._basisTranspose = self._basis.transpose()
-        return self._basisTranspos.multv(vec) + self._origin
+        return self._basisTranspose.multv(vec) + self._origin
 
     def transformFromParentSystem(self, vec):
         """Transform a vector from the parent coordinate system into this 
@@ -120,4 +121,15 @@ class CoordinateSysTest(unittest.TestCase):
     def tearDown(self):
         'Tear down'
         pass
+
+    def testConstructors(self):
+        'Test constructors'
+        c = CoordinateSys('Arthur')
+        assert c._name == 'Arthur'
+        assert c.getName() == 'Arthur'
+        assert c._parent is None
+        assert c._basis == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        assert c._basisTranspose is None
+        assert c._origin == [0, 0, 0]
+
 

@@ -217,6 +217,17 @@ class Matrix:
         
         return M
 
+    @staticmethod
+    def vectorOuterProduct(v1, v2):
+        'Compute the vector outer product (or tensor product) of two vectors.'
+        rows = len(v1)
+        cols = len(v2)
+        m = Matrix(rows=rows, cols=cols)
+        for i in range(rows):
+            for j in range(cols):
+                m[i][j] = v1[i] * v2[j]
+        return m
+
     def transpose(self):
         """Return a new matrix which is the transpose of this matrix."""
         r = Matrix(rows=self._ncols, cols=self._nrows)
@@ -247,6 +258,42 @@ class MatrixTest(unittest.TestCase):
         assert m.size() == (3, 1)
         m = Matrix([1, 0], [0, 1])
         assert m.size() == (2, 2)
+
+        m = Matrix([1], [2, 6], [3])
+        assert m == [[1, 0], [2, 6], [3, 0]]
+
+        hitError = False
+        try:
+            m = Matrix([1], [2, 6], [3], rows=2)
+        except IndexError, e:
+            assert e.message == 'Cannot specify fewer rows than supplied in constructor.'
+            hitError = True
+        assert hitError
+
+        hitError = False
+        try:
+            m = Matrix([1], [2, 6], [3], cols=1)
+        except IndexError, e:
+            assert e.message == 'Cannot specify fewer columns than supplied in constructor.'
+            hitError = True
+        assert hitError
+
+        hitError = False
+        try:
+            m = Matrix([1], [2, 6], [3], foo=1)
+        except KeyError, e:
+            assert e.message == "keyword 'foo' not supported here."
+            hitError = True
+        assert hitError
+
+        m = Matrix(cols=2)
+        assert m.size() == (1,2)
+
+    def testString(self):
+        m = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+        assert ('%s' % m) == """[ [ 1.000000, 2.000000, 3.000000 ]
+  [ 4.000000, 5.000000, 6.000000 ]
+  [ 7.000000, 8.000000, 9.000000 ] ]"""
 
     def testGetSet(self):
         'Tests around get and set operators.'
@@ -386,3 +433,10 @@ class MatrixTest(unittest.TestCase):
         m1 = Matrix([1, 2, 3, 4], [5, 6, 7, 8])
         m2 = m1.transpose()
         assert m2 == [[1, 5], [2, 6], [3, 7], [4, 8]]
+
+    def testOuterProduct(self):
+        'Test the vector outer product routine.'
+        v1 = Vector(1, 2, 3)
+        v2 = Vector(4, 5)
+        m = Matrix.vectorOuterProduct(v1, v2)
+        assert m == [[4, 5], [8, 10], [12, 15]]        

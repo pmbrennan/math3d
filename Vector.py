@@ -124,11 +124,6 @@ class Vector:
             raise IndexError('Vectors to be dotted must be the same size.')
         return sum([x[0]*x[1] for x in zip(self, v)])
 
-    def outerProd(self, v):
-        """Outer product or tensor product"""
-        # TODO write this function.
-        pass
-
     def __eq__(self, v):
         """Equality"""
         if (len(self) != len(v)):
@@ -171,8 +166,8 @@ class Vector:
     def normalize(self):
         """Turn the vector into a unit vector pointing in the same direction.
         Do the operation in place."""
-        n = self.norm()
-        self._v = [ x / n for x in self._v ]
+        n = 1.0 / self.norm()
+        self._v = [ x * n for x in self._v ]
         return self
 
 ########################################################################
@@ -277,7 +272,7 @@ class VectorTest(unittest.TestCase):
 
         hitException = False
         try:
-            vsum = v1 + v2
+            vsum = v1 - v2
         except IndexError:
             hitException = True
         assert hitException
@@ -322,6 +317,15 @@ class VectorTest(unittest.TestCase):
 
         assert Vector(0.1, -0.2, 0.3).dot(Vector(5, 1, -1)) == 0
 
+        hitException = False
+        v1 = Vector(1, 2, 3)
+        v2 = Vector(4, 5, 6, 7)
+        try:
+            v3 = v1.dot(v2)
+        except IndexError:
+            hitException = True
+        assert hitException
+
     def testNorm(self):
         """Test computation of the vector norm."""
         assert(Vector(0, 3, 4).norm() == 5)
@@ -340,6 +344,8 @@ class VectorTest(unittest.TestCase):
         assert (v1 != [0, 2, 4])
         v2 = Vector(3.0, 4.0, 5.000)
         assert (v1 == v2)
+        v3 = Vector(2, 2)
+        assert v1 != v3
 
     def testCross(self):
         """Test v cross v code."""
@@ -361,6 +367,15 @@ class VectorTest(unittest.TestCase):
         assert Vector(0, 0, 3).cross(Vector(s, 0, c)) == Vector(0, 3*s, 0)
         assert Vector(0, 0, 3).cross([s, 0, c]) == [0, 3*s, 0]
 
+        hitException = False
+        try:
+            v1 = Vector(1, 2, 3, 4)
+            v2 = Vector(5, 6, 7, 8)
+            v3 = v1.cross(v2)
+        except IndexError:
+            hitException = True
+        assert hitException
+
     def testSize(self):
         """Test functionality around vector size code."""
         v1 = Vector(1, 2, 3, size=6)
@@ -380,6 +395,18 @@ class VectorTest(unittest.TestCase):
         """Test the zeros function."""
         v1 = Vector.zeros(3)
         assert v1 == (0, 0, 0)
+        hitException = False
+        try:
+            v2 = Vector.zeros(0)
+        except IndexError:
+            hitException = True
+        assert hitException
+        hitException = False
+        try:
+            v2 = Vector.ones(-1)
+        except IndexError:
+            hitException = True
+        assert hitException
 
     def testOnes(self):
         """Test the ones function."""

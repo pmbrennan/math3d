@@ -46,7 +46,7 @@ def runAllUnitTests():
     print "Running all unit tests:"
     #unittest.main()
     testRunner = unittest.TextTestRunner()
-    testCases = [VectorTest, MatrixTest, QuaternionTest]
+    testCases = [VectorTest, MatrixTest, QuaternionTest, CoordinateSysTest]
     suites = [
         unittest.TestLoader().loadTestsFromTestCase(tc)
         for tc in testCases ]
@@ -56,7 +56,7 @@ def runAllUnitTests():
         testRunner.run(suite)
     
 
-def runUnitTestsFromCase(caseClass):
+def runUnitTestsFromCase(caseClass): # pragma: no cover
     
     """Run only the unit tests from the specified class, e.g.
     runUnitTestsFromCase(QuaternionTest)"""
@@ -67,15 +67,15 @@ def runUnitTestsFromCase(caseClass):
         print "Running test suite: " + caseClass.__name__
         testRunner.run(suite)
 
-def runVectorTests():
+def runVectorTests(): # pragma: no cover
     'run vector tests only.'
     runUnitTestsFromCase(VectorTest)
 
-def runMatrixTests():
+def runMatrixTests(): # pragma: no cover
     'run matrix tests only.'
     runUnitTestsFromCase(MatrixTest)
 
-def runQuaternionTests():
+def runQuaternionTests(): # pragma: no cover
     'run quaternion tests only.'
     runUnitTestsFromCase(QuaternionTest)
 
