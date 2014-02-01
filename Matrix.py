@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
 # Disable some pylint messages
-# pylint: disable=C0103,R0201,W0212,R0904,W0511
+# pylint: disable=C0103,R0201,R0904,W0511
 # C0103 : Invalid name "%s" (should match %s)
-# W0212 : Access to a protected member %s of a client class
 # R0201 : Method could be a function
 # R0904 : Too many public methods
 # W0511 : TODO/FIXME/XXX
+# W0212 : Access to a protected member %s of a client class
 
 """
 Matrix definition.
@@ -33,20 +33,20 @@ class Matrix:
         will pad the data as appropriate. However, inconsistencies
         will raise exceptions. If cols=n is not specified, then
         the passed rows must all be the same size."""
-        self._nrows = 0
-        self._ncols = 0
-        self._v = []
-        self._printSpec = '%f' # String formatter for elements
+        self.mNRows = 0
+        self.mNCols = 0
+        self.mV = [] # Matrix row data
+        self.mPrintSpec = '%f' # String formatter for elements
 
         # Read the arguments list and add the data
         if (args is not None) and (len(args) > 0) :
-            self._nrows = len(args)
-            self._ncols = max([len(row) for row in args])
+            self.mNRows = len(args)
+            self.mNCols = max([len(row) for row in args])
             for row in args:
                 newrow = [ float(f) for f in row ]
-                if len(newrow) < self._ncols :
-                    newrow.extend([0.0]*(self._ncols - len(newrow)))
-                self._v.append(newrow)
+                if len(newrow) < self.mNCols :
+                    newrow.extend([0.0]*(self.mNCols - len(newrow)))
+                self.mV.append(newrow)
 
         # Now read the keyword arguments
         kwrows = None
@@ -54,49 +54,49 @@ class Matrix:
         for (kw, val) in kwargs.iteritems():
             if (kw == 'rows'):
                 kwrows = val
-                if kwrows < self._nrows:
+                if kwrows < self.mNRows:
                     raise IndexError('Cannot specify fewer rows ' +
                                      'than supplied in constructor.')
             elif (kw == 'cols'):
                 kwcols = val
-                if kwcols < self._ncols:
+                if kwcols < self.mNCols:
                     raise IndexError('Cannot specify fewer columns ' +
                                      'than supplied in constructor.')
             else:
                 raise KeyError("keyword '%s' not supported here." % kw)
 
         if (kwrows is None) and (kwcols is not None):
-            kwrows = max(self._nrows, 1)
+            kwrows = max(self.mNRows, 1)
 
         if (kwrows is not None) and (kwcols is None):
-            kwcols = max(self._ncols, 1)
+            kwcols = max(self.mNCols, 1)
 
         # Pad out the rows
         if kwrows is not None:
-            rownum = self._nrows
+            rownum = self.mNRows
             while rownum < kwrows:
-                self._v.append([0.0]*self._ncols)
+                self.mV.append([0.0]*self.mNCols)
                 rownum += 1
-            self._nrows = kwrows
+            self.mNRows = kwrows
 
         # Pad out the columns
         if kwcols is not None:
-            nextra = kwcols - self._ncols
-            for row in self._v:
+            nextra = kwcols - self.mNCols
+            for row in self.mV:
                 row.extend([0.0]*nextra)
-            self._ncols = kwcols
+            self.mNCols = kwcols
 
     def __str__(self):
         """Return the string representation of this matrix."""
         rv = '[ '
         first = True
-        for row in self._v:
+        for row in self.mV:
             if not first:
                 rv += '\n  '
             else:
                 first = False
             rv += '[' + ','.join([
-                (' ' + self._printSpec) % e for e in row]) + ' ]'
+                (' ' + self.mPrintSpec) % e for e in row]) + ' ]'
         rv += ' ]'
         return rv
 
@@ -112,15 +112,15 @@ class Matrix:
 
     def size(self):
         """Return a tuple indicating size in (rows,cols)."""
-        return (self._nrows, self._ncols)
+        return (self.mNRows, self.mNCols)
 
     def __getitem__(self, index):
         """Get the item at index."""
-        return self._v.__getitem__(index)
+        return self.mV.__getitem__(index)
 
     def __setitem__(self, key, value):
         """Set the item at index to value."""
-        self._v.__setitem__(key, value)
+        self.mV.__setitem__(key, value)
 
     def __eq__(self, m):
         """Equality operator"""
@@ -129,7 +129,7 @@ class Matrix:
         if not(isinstance(m, list)) and (self.size() != m.size()):
             return False
         i = 0
-        for row in self._v:
+        for row in self.mV:
             j = 0
             for element in row:
                 if element != m[i][j]:
@@ -154,48 +154,48 @@ class Matrix:
         for i in range(0, nrows):
             r = []
             for j in range(0, ncols):
-                r.append(self._v[i][j] + m._v[i][j])
+                r.append(self.mV[i][j] + m.mV[i][j])
             v.append(r)
-        rv._v = v
+        rv.mV = v
         return rv
 
     def scale(self, scalar):
         """Multiply a matrix by a scale factor."""
-        self._v = [ [ e * float(scalar) for e in row ] for row in self._v ]
+        self.mV = [ [ e * float(scalar) for e in row ] for row in self.mV ]
 
     def mults(self, scalar):
         'Multiply vector by a scalar, return a new vector'
-        r = Matrix(rows = self._nrows, cols = self._ncols)
-        r._v = [ [ e * float(scalar) for e in row ] for row in self._v ]
+        r = Matrix(rows = self.mNRows, cols = self.mNCols)
+        r.mV = [ [ e * float(scalar) for e in row ] for row in self.mV ]
         return r
 
     def getRow(self, index):
         """Get a copy of a row of the matrix, as a Vector."""
-        if (index < 0) or (index >= self._nrows):
+        if (index < 0) or (index >= self.mNRows):
             raise IndexError('Index out of bounds : %s' % index)
 
-        return Vector.fromSequence(self._v[index])
+        return Vector.fromSequence(self.mV[index])
 
     def getColumn(self, index):
         """Get a copy of a column of the matrix, as a Vector."""
-        if (index < 0) or (index >= self._ncols):
+        if (index < 0) or (index >= self.mNCols):
             raise IndexError('Index out of bounds : %s' % index)
 
-        return Vector.fromSequence([self._v[i][index] 
-                                    for i in range(0, self._nrows)])
+        return Vector.fromSequence([self.mV[i][index] 
+                                    for i in range(0, self.mNRows)])
 
     def multv(self, v):
         """Multiply a matrix by a vector, returning a Vector:
 
         V = self * v
         """
-        if self._ncols != len(v):
+        if self.mNCols != len(v):
             raise TypeError(
                 "Incompatible object sizes: %sx%s matrix and %s vector" % 
-                (self._nrows, self._ncols, len(v)))
-        V = Vector(size=self._nrows)
-        for i in range(0, self._nrows):
-            V[i] = sum([ self[i][j] * v[j] for j in range(0, self._ncols) ])
+                (self.mNRows, self.mNCols, len(v)))
+        V = Vector(size=self.mNRows)
+        for i in range(0, self.mNRows):
+            V[i] = sum([ self[i][j] * v[j] for j in range(0, self.mNCols) ])
         return V
 
     def multm(self, m):
@@ -203,19 +203,19 @@ class Matrix:
 
         M = self * m
         """
-        if self._ncols != m._nrows:
+        if self.mNCols != m.mNRows:
             raise TypeError(
                 "Incompatible object sizes: %sx%s matrix and %sx%s matrix" %
-                (self._nrows,self._ncols,m._nrows,m._ncols))
-        M = Matrix(rows=self._nrows, cols=m._ncols)
+                (self.mNRows,self.mNCols,m.mNRows,m.mNCols))
+        M = Matrix(rows=self.mNRows, cols=m.mNCols)
 
         # TODO: This could be optimized.
-        for i in range(0, self._nrows):
-            for j in range(0, m._ncols):
+        for i in range(0, self.mNRows):
+            for j in range(0, m.mNCols):
                 d = 0.0
-                for k in range(0, self._ncols):
-                    d += self._v[i][k] * m._v[k][j]
-                M._v[i][j] = d
+                for k in range(0, self.mNCols):
+                    d += self.mV[i][k] * m.mV[k][j]
+                M.mV[i][j] = d
         
         return M
 
@@ -232,10 +232,10 @@ class Matrix:
 
     def transpose(self):
         """Return a new matrix which is the transpose of this matrix."""
-        r = Matrix(rows=self._ncols, cols=self._nrows)
-        for i in range(self._nrows):
-            for j in range(self._ncols):
-                r._v[j][i] = self._v[i][j]
+        r = Matrix(rows=self.mNCols, cols=self.mNRows)
+        for i in range(self.mNRows):
+            for j in range(self.mNCols):
+                r.mV[j][i] = self.mV[i][j]
         return r
 
 ########################################################################

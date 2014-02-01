@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
 # Disable some pylint messages
-# pylint: disable=C0103,R0201,W0212,R0904,W0511
+# pylint: disable=C0103,R0201,R0904,W0511
 # C0103 : Invalid name "%s" (should match %s)
-# W0212 : Access to a protected member %s of a client class
 # R0201 : Method could be a function
 # R0904 : Too many public methods
 # W0511 : TODO/FIXME/XXX
+# W0212 : Access to a protected member %s of a client class
 
 """
 Coordinate System definition.
@@ -30,11 +30,11 @@ class CoordinateSys:
            origin: the position of the origin of this coordinate system,
                 expressed in terms of the parent coordinate system."""
 
-        self._name = None
-        self._parent = None
-        self._basis = None
-        self._basisTranspose = None
-        self._origin = None
+        self.mName = None
+        self.mParent = None
+        self.mBasis = None
+        self.mBasisTranspose = None
+        self.mOrigin = None
 
         self.setName(name)
         self.setParent(parent)
@@ -43,28 +43,28 @@ class CoordinateSys:
 
     def getName(self):
         """Return the coordinate system's name."""
-        return self._name
+        return self.mName
 
     def setName(self, name):
         """Set the coordinate system's name."""
         if name is not None:
-            self._name = name
+            self.mName = name
         else:
-            self._name = ''
+            self.mName = ''
 
     def getParent(self):
         """Return the coordinate system which this is based upon."""
-        return self._parent
+        return self.mParent
 
     def setParent(self, parent):
         """Set the coordinate system this is based on. None will be typically
         used to indicate that this is the global coordinate system."""
         if (parent is not None and parent == self):
-            self._parent = None
+            self.mParent = None
             raise ValueError('Cannot assign a coordinate system ' +
                              'to be its own parent.')
         else:
-            self._parent = parent
+            self.mParent = parent
 
     def setBasis(self, basis):
         """Set the basis matrix for this coordinate system.  The basis matrix
@@ -84,16 +84,16 @@ class CoordinateSys:
         # TODO: error out if this matrix is not 3x3 and orthonormal.
         # TODO: error out if there is no parent coordinate system!
         if basis is not None:
-            self._basis = basis # The basis matrix.
+            self.mBasis = basis # The basis matrix.
         else:
-            self._basis = Matrix.identity(3)
+            self.mBasis = Matrix.identity(3)
 
         # We don't assign a value to this until we need it.
-        self._basisTranspose = None
+        self.mBasisTranspose = None
 
     def getBasis(self):
         'Get the basis matrix of this coordinate system.'
-        return self._basis
+        return self.mBasis
 
     def setOrigin(self, origin):
         'Set the origin position of this coordinate system.'
@@ -101,13 +101,13 @@ class CoordinateSys:
         # TODO: error out if there is no parent coordinate system!
         # TODO: error out if the origin vector is not length 3.
         if origin is not None:
-            self._origin = origin 
+            self.mOrigin = origin 
         else:
-            self._origin = Vector(0.0, 0.0, 0.0)
+            self.mOrigin = Vector(0.0, 0.0, 0.0)
 
     def getOrigin(self):
         'Get the origin position of this coordinate system.'
-        return self._origin
+        return self.mOrigin
 
     @staticmethod
     def compare(a, b):
@@ -121,21 +121,21 @@ class CoordinateSys:
 
     def __eq__(self, other):
         'Equality operator'
-        return (CoordinateSys.compare(self._parent, other._parent) and
-                CoordinateSys.compare(self._basis, other._basis) and
-                CoordinateSys.compare(self._origin, other._origin))
+        return (CoordinateSys.compare(self.mParent, other.mParent) and
+                CoordinateSys.compare(self.mBasis, other.mBasis) and
+                CoordinateSys.compare(self.mOrigin, other.mOrigin))
 
     def transformToParentSystem(self, vec):
         """Transform a vector from this coordinate system into the 
            parent coordinate system."""
-        if self._basisTranspose is None:
-            self._basisTranspose = self._basis.transpose()
-        return self._basisTranspose.multv(vec) + self._origin
+        if self.mBasisTranspose is None:
+            self.mBasisTranspose = self.mBasis.transpose()
+        return self.mBasisTranspose.multv(vec) + self.mOrigin
 
     def transformFromParentSystem(self, vec):
         """Transform a vector from the parent coordinate system into this 
            coordinate system."""
-        return self._basis.multv(vec - self._origin)
+        return self.mBasis.multv(vec - self.mOrigin)
 
 class CoordinateSysTest(unittest.TestCase):
 
@@ -152,12 +152,12 @@ class CoordinateSysTest(unittest.TestCase):
     def testConstructors(self):
         'Test constructors'
         c = CoordinateSys('Arthur')
-        assert c._name == 'Arthur'
+        assert c.mName == 'Arthur'
         assert c.getName() == 'Arthur'
-        assert c._parent is None
-        assert c._basis == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        assert c._basisTranspose is None
-        assert c._origin == [0, 0, 0]
+        assert c.mParent is None
+        assert c.mBasis == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        assert c.mBasisTranspose is None
+        assert c.mOrigin == [0, 0, 0]
 
         c = CoordinateSys(None)
         assert c.getName() == ''

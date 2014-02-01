@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
 # Disable some pylint messages
-# pylint: disable=C0103,R0201,W0212,R0904,W0511
+# pylint: disable=C0103,R0201,R0904,W0511,W0142
 # C0103 : Invalid name "%s" (should match %s)
-# W0212 : Access to a protected member %s of a client class
 # R0201 : Method could be a function
 # R0904 : Too many public methods
 # W0511 : TODO/FIXME/XXX
+# W0212 : Access to a protected member %s of a client class
+# W0142 : Used * or ** magic
 
 """
 Vector definition.
@@ -31,10 +32,10 @@ class Vector:
         items allocated to accomodate any previously specified elements.
 
         """
-        self._v = [] # Elements of the vector
-        self._printSpec = '%f' # String formatter for elements
+        self.mV = [] # Elements of the vector
+        self.mPrintSpec = '%f' # String formatter for elements
         for x in args:
-            self._v.append(float(x))
+            self.mV.append(float(x))
         # TODO: raise an exception if there are unhandled keywords
         if 'size' in kwargs and kwargs['size'] is not None:
             if kwargs['size'] < len(args):
@@ -43,7 +44,7 @@ class Vector:
             else:
                 nToAdd = kwargs['size'] - len(args)
                 while nToAdd > 0:
-                    self._v.append(0.0)
+                    self.mV.append(0.0)
                     nToAdd -= 1
 
     @staticmethod
@@ -69,10 +70,10 @@ class Vector:
     def __str__(self):
         """Returns the string representation of the vector."""
         rv = '[ '
-        n = len(self._v)
+        n = len(self.mV)
         i = 0
-        for f in self._v:
-            rv += self._printSpec % f
+        for f in self.mV:
+            rv += self.mPrintSpec % f
             i += 1
             if (i < n):
                 rv += ', '
@@ -83,18 +84,18 @@ class Vector:
 
     def __len__(self):
         "Return the length of the vector."
-        return self._v.__len__()
+        return self.mV.__len__()
 
     def __getitem__(self, key):
         "Get an item in the vector."
-        return self._v.__getitem__(key)
+        return self.mV.__getitem__(key)
 
     def __setitem__(self, key, value):
         "Set the value of an item in the vector."
-        self._v.__setitem__(key, value)
+        self.mV.__setitem__(key, value)
 
     def __delitem__(self, key):
-        self._v.__delitem__(key)
+        self.mV.__delitem__(key)
 
     def __add__(self, v):
         if (len(self) != len(v)):
@@ -108,13 +109,13 @@ class Vector:
 
     def scale(self, s):
         """Scale a vector in place by a given scalar."""
-        for n in range(len(self._v)):
-            self._v[n] *= s
+        for n in range(len(self.mV)):
+            self.mV[n] *= s
 
     def mults(self, s):
         """Multiply a vector by a scalar, return the scaled
         vector. The original vector remains unchanged."""
-        prod = Vector.fromSequence(self._v)
+        prod = Vector.fromSequence(self.mV)
         prod.scale(s)
         return prod
 
@@ -149,10 +150,10 @@ class Vector:
         | x2  y2  z2 |
 
         """
-        if (len(self._v) != 3) or (len(v) != 3):
+        if (len(self.mV) != 3) or (len(v) != 3):
             raise IndexError('Cross product is only for 2 3-vectors.')
 
-        (x1, y1, z1) = (self._v[0], self._v[1], self._v[2])
+        (x1, y1, z1) = (self.mV[0], self.mV[1], self.mV[2])
         (x2, y2, z2) = (v[0], v[1], v[2])
         x = y1 * z2 - y2 * z1
         y = z1 * x2 - z2 * x1
@@ -161,13 +162,13 @@ class Vector:
 
     def norm(self):
         """Return the Euclidean norm of the vector"""
-        return math.sqrt(sum([x*x for x in self._v]))
+        return math.sqrt(sum([x*x for x in self.mV]))
 
     def normalize(self):
         """Turn the vector into a unit vector pointing in the same direction.
         Do the operation in place."""
         n = 1.0 / self.norm()
-        self._v = [ x * n for x in self._v ]
+        self.mV = [ x * n for x in self.mV ]
         return self
 
 ########################################################################
@@ -179,7 +180,7 @@ class VectorTest(unittest.TestCase):
         """Test len()"""
         vector = Vector()
         assert len(vector) == 0
-        vector._v = [ 1, 2, -3 ]
+        vector.mV = [ 1, 2, -3 ]
         assert vector.__len__() == 3
         assert len(vector) == 3
         assert vector[0] == 1
