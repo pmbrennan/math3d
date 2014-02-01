@@ -109,8 +109,9 @@ class CoordinateSys:
         'Get the origin position of this coordinate system.'
         return self._origin
 
-    def compare(self, a, b):
-        'Perform a comparison operation.'
+    @staticmethod
+    def compare(a, b):
+        'Perform a comparison operation between two Coordinate Systems.'
         if (a is None and b is None):
             return True
         elif (a is None or b is None):
@@ -120,9 +121,9 @@ class CoordinateSys:
 
     def __eq__(self, other):
         'Equality operator'
-        return (self.compare(self._parent, other._parent) and
-                self.compare(self._basis, other._basis) and
-                self.compare(self._origin, other._origin))
+        return (CoordinateSys.compare(self._parent, other._parent) and
+                CoordinateSys.compare(self._basis, other._basis) and
+                CoordinateSys.compare(self._origin, other._origin))
 
     def transformToParentSystem(self, vec):
         """Transform a vector from this coordinate system into the 
