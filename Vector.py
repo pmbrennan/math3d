@@ -175,67 +175,60 @@ class Vector:
 class VectorTest(unittest.TestCase):
     """Unit tests for Vector class."""
 
-    def setUp(self):
-        """Setup unit tests."""
-        self.vector = Vector()
-
-    def tearDown(self):
-        """Tear down unit tests."""
-        pass
-
     def testLen(self):
         """Test len()"""
-        assert len(self.vector) == 0
-        self.vector._v = [ 1, 2, -3 ]
-        assert self.vector.__len__() == 3
-        assert len(self.vector) == 3
-        assert self.vector[0] == 1
-        assert self.vector[1] == 2
-        assert self.vector[2] == -3
+        vector = Vector()
+        assert len(vector) == 0
+        vector._v = [ 1, 2, -3 ]
+        assert vector.__len__() == 3
+        assert len(vector) == 3
+        assert vector[0] == 1
+        assert vector[1] == 2
+        assert vector[2] == -3
 
     def testMultipleConstructors(self):
         'Test multiple ways of constructing a vector.'
-        self.vector = Vector(3, 4, 5, 7)
-        assert len(self.vector) == 4
-        assert self.vector[2] == 5.0
+        vector = Vector(3, 4, 5, 7)
+        assert len(vector) == 4
+        assert vector[2] == 5.0
 
     def testStaticCtor(self):
         'Test the static fromSequence ctor.'
-        self.v1 = Vector.fromSequence((1, 2, 3))
-        assert len(self.v1) == 3
-        assert self.v1[0] == 1
-        assert self.v1[1] == 2
-        assert self.v1[2] == 3
+        v1 = Vector.fromSequence((1, 2, 3))
+        assert len(v1) == 3
+        assert v1[0] == 1
+        assert v1[1] == 2
+        assert v1[2] == 3
 
-        self.v2 = Vector.fromSequence([21, 6, -9, 8.0/4.0])
-        assert len(self.v2) == 4
-        assert self.v2[0] == 21
-        assert self.v2[1] == 6
-        assert self.v2[2] == -9
-        assert self.v2[3] == 2
+        v2 = Vector.fromSequence([21, 6, -9, 8.0/4.0])
+        assert len(v2) == 4
+        assert v2[0] == 21
+        assert v2[1] == 6
+        assert v2[2] == -9
+        assert v2[3] == 2
 
     def testSettersAndGetters(self):
         'Test vector setters and getters.'
-        self.vector = Vector(4, 5, 6)
-        assert self.vector[1] == 5
-        self.vector[1] = -8
-        assert self.vector[1] == -8
+        vector = Vector(4, 5, 6)
+        assert vector[1] == 5
+        vector[1] = -8
+        assert vector[1] == -8
 
     def testDel(self):
         'test the delete function.'
-        self.vector = Vector(4, 5, 6)
-        assert len(self.vector) == 3
-        del(self.vector[1])
-        assert len(self.vector) == 2
+        vector = Vector(4, 5, 6)
+        assert len(vector) == 3
+        del(vector[1])
+        assert len(vector) == 2
 
     def testScale(self):
         'test vector scaling.'
-        self.v1 = Vector(-3, .8, 7)
-        self.v1.scale(11)
-        assert self.v1 == [ -33.000000, 8.800000, 77.000000 ]
-        self.v2 = self.v1.mults(-2)
-        assert self.v1 == [ -33.000000, 8.800000, 77.000000 ]
-        assert self.v2 == [ 66, -17.6, -154]
+        v1 = Vector(-3, .8, 7)
+        v1.scale(11)
+        assert v1 == [ -33.000000, 8.800000, 77.000000 ]
+        v2 = v1.mults(-2)
+        assert v1 == [ -33.000000, 8.800000, 77.000000 ]
+        assert v2 == [ 66, -17.6, -154]
 
     def testAdd(self):
         'test vector addition.'
@@ -397,13 +390,13 @@ class VectorTest(unittest.TestCase):
         assert v1 == (0, 0, 0)
         hitException = False
         try:
-            v2 = Vector.zeros(0)
+            Vector.zeros(0)
         except IndexError:
             hitException = True
         assert hitException
         hitException = False
         try:
-            v2 = Vector.ones(-1)
+            Vector.ones(-1)
         except IndexError:
             hitException = True
         assert hitException

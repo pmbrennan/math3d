@@ -160,7 +160,7 @@ class Quaternion:
         'Invert in place.'
         n = self.norm()
         d = 1.0 / (n * n)
-        for i in range(0,3) : 
+        for i in range(0, 3) : 
             self._v[i] *= -d
         self._s *= d
 
@@ -388,6 +388,6 @@ class QuaternionTest(unittest.TestCase):
         vv = math.sin(1.0) / (math.sqrt(3.0))
         cc = math.cos(1.0)
         q2 = Quaternion(cc, vv, vv, vv)
-        assert q1.__str__() == q2.__str__(), '%s %s'%(q1,q2)
+        assert q1.__str__() == q2.__str__(), '%s %s' % (q1, q2)
 
     

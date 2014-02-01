@@ -30,28 +30,57 @@ class CoordinateSys:
            origin: the position of the origin of this coordinate system,
                 expressed in terms of the parent coordinate system."""
 
+        self._name = None
+        self._parent = None
+        self._basis = None
+        self._basisTranspose = None
+        self._origin = None
+
+        self.setName(name)
+        self.setParent(parent)
+        self.setBasis(basis)
+        self.setOrigin(origin)
+
+    def getName(self):
+        """Return the coordinate system's name."""
+        return self._name
+
+    def setName(self, name):
+        """Set the coordinate system's name."""
         if name is not None:
             self._name = name
         else:
             self._name = ''
 
-        # The coordinate system this is based on. None will be typically
-        # used to indicate that this is the global coordinate system.
-        self._parent = parent
+    def getParent(self):
+        """Return the coordinate system which this is based upon."""
+        return self._parent
 
-        # The basis matrix should be 3x3. The rows should be:
-        # 
-        # | Row # | Description                                         |
-        # +-------+-----------------------------------------------------+
-        # | 0     | x basis vector (row vector, in parent coordinates.) |
-        # | 1     | y basis vector (row vector, in parent coordinates.) |
-        # | 2     | z basis vector (row vector, in parent coordinates.) |
-        # 
-        # Therefore M * (x - O) = x' where:
-        # M = the basis vector
-        # O = origin of this coordinate system, in parent coordinate system.
-        # x = vector in parent coordinate system
-        # x' = vector in this coordinate system
+    def setParent(self, parent):
+        """Set the coordinate system this is based on. None will be typically
+        used to indicate that this is the global coordinate system."""
+        if (parent is not None and parent == self):
+            self._parent = None
+            raise ValueError('Cannot assign a coordinate system ' +
+                             'to be its own parent.')
+        else:
+            self._parent = parent
+
+    def setBasis(self, basis):
+        """Set the basis matrix for this coordinate system.  The basis matrix
+        should be 3x3. The rows should be:
+        
+        | Row # | Description                                         |
+        +-------+-----------------------------------------------------+
+        | 0     | x basis vector (row vector, in parent coordinates.) |
+        | 1     | y basis vector (row vector, in parent coordinates.) |
+        | 2     | z basis vector (row vector, in parent coordinates.) |
+        
+        Therefore M * (x - O) = x' where:
+        M = the basis vector
+        O = origin of this coordinate system, in parent coordinate system.
+        x = vector in parent coordinate system
+        x' = vector in this coordinate system."""
         # TODO: error out if this matrix is not 3x3 and orthonormal.
         # TODO: error out if there is no parent coordinate system!
         if basis is not None:
@@ -62,41 +91,29 @@ class CoordinateSys:
         # We don't assign a value to this until we need it.
         self._basisTranspose = None
 
+    def getBasis(self):
+        'Get the basis matrix of this coordinate system.'
+        return self._basis
+
+    def setOrigin(self, origin):
+        'Set the origin position of this coordinate system.'
         # The position of the origin in terms of the parent.
         # TODO: error out if there is no parent coordinate system!
+        # TODO: error out if the origin vector is not length 3.
         if origin is not None:
             self._origin = origin 
         else:
             self._origin = Vector(0.0, 0.0, 0.0)
 
-    def getName(self):
-        """Return the coordinate system's name."""
-        return self._name
-
-    def setName(self, name):
-        """Set the coordinate system's name."""
-        self._name = name
-
-    def getParent(self):
-        """Return the coordinate system which this is based upon."""
-        return self._parent
-
-    def setParent(self, newParent):
-        """Set the new parent coordinate system for this coordinate system."""
-        self._parent = newParent
-
-        if (newParent == self):
-            self._parent = None
-            raise ValueError('Cannot assign a coordinate system ' +
-                             'to be its own parent.')
-
-    def setOrigin(self, origin):
-        'Set the origin position of this coordinate system.'
-        self._origin = origin
-
     def getOrigin(self):
         'Get the origin position of this coordinate system.'
         return self._origin
+
+    def __eq__(self, other):
+        'Equality operator'
+        return (self._parent == other._parent and
+                self._basis == other._basis and
+                self._origin == other._origin)
 
     def transformToParentSystem(self, vec):
         """Transform a vector from this coordinate system into the 
@@ -131,5 +148,30 @@ class CoordinateSysTest(unittest.TestCase):
         assert c._basis == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         assert c._basisTranspose is None
         assert c._origin == [0, 0, 0]
+
+        c = CoordinateSys(None)
+        assert c.getName() == ''
+
+        basis1 = Matrix([0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0])
+        basis2 = Matrix([0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0])
+
+        c1 = CoordinateSys('foo', basis=basis1)
+        assert c1.getBasis() == basis2
+
+        c2 = CoordinateSys('bar', origin=Vector(4, 5, 6))
+        assert c2.getOrigin() == [4, 5, 6]
+
+        c2.setParent(c1)
+        assert c2.getParent() == c1
+
+    def testSetParent(self):
+        c1 = CoordinateSys('foo')
+        hitError = False
+        try:
+            c1.setParent(c1)
+        except ValueError:
+            hitError = True
+        assert hitError
+
 
 

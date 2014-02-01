@@ -28,11 +28,10 @@ hopefully a greater!) level of understanding.
 
 """
 
-from Vector import *
-from Matrix import *
-from CoordinateSys import *
-from Quaternion import *
-from Quaternions import *
+from Vector import Vector, VectorTest
+from Matrix import Matrix, MatrixTest
+from CoordinateSys import CoordinateSys, CoordinateSysTest
+from Quaternion import Quaternion, QuaternionTest
 
 # import time                                                
 

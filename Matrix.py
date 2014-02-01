@@ -73,8 +73,10 @@ class Matrix:
 
         # Pad out the rows
         if kwrows is not None:
-            for rownum in range(self._nrows, kwrows):
+            rownum = self._nrows
+            while rownum < kwrows:
                 self._v.append([0.0]*self._ncols)
+                rownum += 1
             self._nrows = kwrows
 
         # Pad out the columns
@@ -145,7 +147,7 @@ class Matrix:
         M = self + m
         """
         if (self.size() != m.size()):
-            return TypeError('Cannot add dissimilar matrices.')
+            raise TypeError('Cannot add dissimilar matrices.')
         nrows, ncols = self.size()
         rv = Matrix(rows=nrows, cols=ncols)
         v = []
@@ -242,14 +244,6 @@ class MatrixTest(unittest.TestCase):
 
     """Unit tests for Matrix."""
 
-    def setUp(self):
-        'Set up'
-        pass
-
-    def tearDown(self):
-        'Tear down'
-        pass
-
     def testCtors(self):
         'Tests around constructors.'
         m = Matrix()
@@ -266,7 +260,8 @@ class MatrixTest(unittest.TestCase):
         try:
             m = Matrix([1], [2, 6], [3], rows=2)
         except IndexError, e:
-            assert e.message == 'Cannot specify fewer rows than supplied in constructor.'
+            assert e.message == \
+                'Cannot specify fewer rows than supplied in constructor.'
             hitError = True
         assert hitError
 
@@ -274,7 +269,8 @@ class MatrixTest(unittest.TestCase):
         try:
             m = Matrix([1], [2, 6], [3], cols=1)
         except IndexError, e:
-            assert e.message == 'Cannot specify fewer columns than supplied in constructor.'
+            assert e.message == \
+                'Cannot specify fewer columns than supplied in constructor.'
             hitError = True
         assert hitError
 
@@ -287,9 +283,10 @@ class MatrixTest(unittest.TestCase):
         assert hitError
 
         m = Matrix(cols=2)
-        assert m.size() == (1,2)
+        assert m.size() == (1, 2)
 
     def testString(self):
+        'Test string functions'
         m = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
         assert ('%s' % m) == """[ [ 1.000000, 2.000000, 3.000000 ]
   [ 4.000000, 5.000000, 6.000000 ]
@@ -307,9 +304,13 @@ class MatrixTest(unittest.TestCase):
     def testEquality(self):
         'Test equality operator.'
         m = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+        m2 = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+        m3 = Matrix([1, 2], [4, 5], [7, 8])
         assert m == m
         assert m == [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         assert m != [[1, 2, 3], [4, 5, 6], [7, 8, -9]]
+        assert m == m2
+        assert m != m3
 
     def testScaling(self):
         'Test Matrix scaling.'
@@ -342,6 +343,12 @@ class MatrixTest(unittest.TestCase):
             caughtException = True
         assert caughtException
 
+    def testSetRow(self):
+        'test row setter'
+        m = Matrix([1, 2], [3, 4], [5, 6])
+        m[1] = [0, 0]
+        assert m == [[1, 2], [0, 0], [5, 6]]
+
     def testGetColumn(self):
         'Test column accessor.'
         m = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
@@ -351,13 +358,13 @@ class MatrixTest(unittest.TestCase):
         assert v == [3, 6, 9]
         caughtException = False
         try:
-            v = m.getRow(-1)
+            v = m.getColumn(-1)
         except IndexError:
             caughtException = True
         assert caughtException
         caughtException = False
         try:
-            v = m.getRow(900)
+            v = m.getColumn(900)
         except IndexError:
             caughtException = True
         assert caughtException
@@ -388,6 +395,15 @@ class MatrixTest(unittest.TestCase):
         assert m2 == [[7, 8, 9], [10, 11, 12]]
         assert m3 == [[8, 10, 12], [14, 16, 18]]
 
+        hitError = False
+        m1 = Matrix([1, 1], [1, 1])
+        m2 = Matrix([1, 1], [1, 1], [1, 1])
+        try:
+            m3 = m1 + m2
+        except TypeError:
+            hitError = True
+        assert hitError
+
     def testMatrixVectorMultiplication(self):
         'Test matrix-vector multiplication.'
         m = Matrix.identity(3)
@@ -405,6 +421,15 @@ class MatrixTest(unittest.TestCase):
         assert v == [1, -1]
         v = m.multv(v)
         assert v == [1, 1]
+
+        hitError = False
+        m = Matrix([1, 1], [1, 1])
+        v = Vector(1, 2, 3)
+        try:
+            m.multv(v)
+        except TypeError:
+            hitError = True
+        assert hitError
 
     def testMatrixMatrixMultiplication(self):
         'Test matrix-matrix multiplication.'
