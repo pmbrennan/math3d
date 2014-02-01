@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Disable some pylint messages
-# pylint: disable=C0103,R0201,W0212,R0904,W0511
+# pylint: disable=C0103,R0201,R0904,W0511
 # C0103 : Invalid name "%s" (should match %s)
 # W0212 : Access to a protected member %s of a client class
 # R0201 : Method could be a function
@@ -36,9 +36,9 @@ class Quaternion:
     """
 
     def __init__(self, s, a, b, c):
-        self._printSpec = '%f'
-        self._s = s
-        self._v = Vector(a, b, c)
+        self.mPrintSpec = '%f'
+        self.mScalar = s
+        self.mVector = Vector(a, b, c)
 
     @staticmethod
     def fromScalarVector(scalar, vector):
@@ -47,14 +47,14 @@ class Quaternion:
         return Quaternion(scalar, vector[0], vector[1], vector[2])
 
     def __str__(self):
-        return '[ %s, %s ]' % (self._printSpec % self._s, self._v)
+        return '[ %s, %s ]' % (self.mPrintSpec % self.mScalar, self.mVector)
 
     def str2(self):
         """Alternate way to represent a Quaternion as a string."""
-        signs = [ ('+' if f >= 0 else '-') for f in self._v ]
-        vals = [ abs(f) for f in self._v ]
+        signs = [ ('+' if f >= 0 else '-') for f in self.mVector ]
+        vals = [ abs(f) for f in self.mVector ]
 
-        return '%s %s %si %s %sj %s %sk' % (self._s, 
+        return '%s %s %si %s %sj %s %sk' % (self.mScalar, 
                                             signs[0],
                                             vals[0],
                                             signs[1],
@@ -64,7 +64,7 @@ class Quaternion:
 
     def __eq__(self, q):
         'Equality operator.'
-        return self._s == q._s and self._v == q._v
+        return self.mScalar == q.mScalar and self.mVector == q.mVector
 
     def __ne__(self, q):
         'Not equals'
@@ -74,27 +74,31 @@ class Quaternion:
         """Compare the quaternion to a sequence assumed to be in
         the form [ s, a, b, c ]."""
         return (len(seq) == 4 and 
-                self._s == seq[0] and self._v[0] == seq[1] and
-                self._v[1] == seq[2] and self._v[2] == seq[3])
+                self.mScalar == seq[0] and self.mVector[0] == seq[1] and
+                self.mVector[1] == seq[2] and self.mVector[2] == seq[3])
 
     def __add__(self, q):
         'Return self + q'
-        return Quaternion(self._s + q._s, self._v[0] + q._v[0],
-                          self._v[1] + q._v[1], self._v[2] + q._v[2])
+        return Quaternion(self.mScalar + q.mScalar, 
+                          self.mVector[0] + q.mVector[0],
+                          self.mVector[1] + q.mVector[1], 
+                          self.mVector[2] + q.mVector[2])
 
     def __sub__(self, q):
         'Return self - q'
-        return Quaternion(self._s - q._s, self._v[0] - q._v[0],
-                          self._v[1] - q._v[1], self._v[2] - q._v[2])
+        return Quaternion(self.mScalar - q.mScalar, 
+                          self.mVector[0] - q.mVector[0],
+                          self.mVector[1] - q.mVector[1], 
+                          self.mVector[2] - q.mVector[2])
 
     def scale(self, s):
         'Scale this quaternion by scalar s in-place.'
-        self._s = self._s * float(s)
-        self._v.scale(s)
+        self.mScalar = self.mScalar * float(s)
+        self.mVector.scale(s)
 
     def mults(self, s):
         'Return self * scalar as a new Quaternion.'
-        r = Quaternion.fromScalarVector(self._s, self._v)
+        r = Quaternion.fromScalarVector(self.mScalar, self.mVector)
         r.scale(s)
         return r
 
@@ -102,49 +106,53 @@ class Quaternion:
         """Multiplication Algorithm 1:
         This is a very nice definition of the quaternion multiplication
         operator, but it is terribly inefficient."""
-        s = self._s * q._s - self._v.dot(q._v)
-        v = q._v.mults(self._s) + self._v.mults(q._s) + self._v.cross(q._v)
+        s = self.mScalar * q.mScalar - self.mVector.dot(q.mVector)
+        v = q.mVector.mults(self.mScalar) + \
+            self.mVector.mults(q.mScalar) + \
+            self.mVector.cross(q.mVector)
         return Quaternion.fromScalarVector(s, v)
 
     def mul2(self, q):
         """Multiplication Algorithm 2: This is a much more efficient
         implementation of quaternion multiplication. It isover 3x faster than
         mul1."""
-        s = (self._s * q._s - self._v[0] * q._v[0] - 
-             self._v[1] * q._v[1] - self._v[2] * q._v[2])
-        a = (self._s * q._v[0] + self._v[0] * q._s + 
-             self._v[1] * q._v[2] - self._v[2] * q._v[1])
-        b = (self._s * q._v[1] - self._v[0] * q._v[2] + 
-             self._v[1] * q._s + self._v[2] * q._v[0])
-        c = (self._s * q._v[2] + self._v[0] * q._v[1] - 
-             self._v[1] * q._v[0] + self._v[2] * q._s)
+        s = (self.mScalar * q.mScalar - self.mVector[0] * q.mVector[0] - 
+             self.mVector[1] * q.mVector[1] - self.mVector[2] * q.mVector[2])
+        a = (self.mScalar * q.mVector[0] + self.mVector[0] * q.mScalar + 
+             self.mVector[1] * q.mVector[2] - self.mVector[2] * q.mVector[1])
+        b = (self.mScalar * q.mVector[1] - self.mVector[0] * q.mVector[2] + 
+             self.mVector[1] * q.mScalar + self.mVector[2] * q.mVector[0])
+        c = (self.mScalar * q.mVector[2] + self.mVector[0] * q.mVector[1] - 
+             self.mVector[1] * q.mVector[0] + self.mVector[2] * q.mScalar)
         return Quaternion(s, a, b, c)
 
     def mulq(self, q):
         "Multiply two quaternions and return a new quaternion product."
-        s = (self._s * q._s - self._v[0] * q._v[0] - 
-             self._v[1] * q._v[1] - self._v[2] * q._v[2])
-        a = (self._s * q._v[0] + self._v[0] * q._s + 
-             self._v[1] * q._v[2] - self._v[2] * q._v[1])
-        b = (self._s * q._v[1] - self._v[0] * q._v[2] + 
-             self._v[1] * q._s + self._v[2] * q._v[0])
-        c = (self._s * q._v[2] + self._v[0] * q._v[1] - 
-             self._v[1] * q._v[0] + self._v[2] * q._s)
+        s = (self.mScalar * q.mScalar - self.mVector[0] * q.mVector[0] - 
+             self.mVector[1] * q.mVector[1] - self.mVector[2] * q.mVector[2])
+        a = (self.mScalar * q.mVector[0] + self.mVector[0] * q.mScalar + 
+             self.mVector[1] * q.mVector[2] - self.mVector[2] * q.mVector[1])
+        b = (self.mScalar * q.mVector[1] - self.mVector[0] * q.mVector[2] + 
+             self.mVector[1] * q.mScalar + self.mVector[2] * q.mVector[0])
+        c = (self.mScalar * q.mVector[2] + self.mVector[0] * q.mVector[1] - 
+             self.mVector[1] * q.mVector[0] + self.mVector[2] * q.mScalar)
         return Quaternion(s, a, b, c)
 
     def conj(self):
         'return the conjugate of a quaternion.'
-        return Quaternion(self._s, -self._v[0], -self._v[1], -self._v[2])
+        return Quaternion(self.mScalar, -self.mVector[0], 
+                          -self.mVector[1], -self.mVector[2])
 
     def norm(self):
         'return the norm of a quaternion.'
-        return math.sqrt(sum([x*x for x in self._v]) + self._s * self._s)
+        return math.sqrt(sum([x*x for x in self.mVector]) 
+                         + self.mScalar * self.mScalar)
 
     def normalize(self):
         'reset the quaternion so that it has norm = 1'
         n_reciprocal = 1.0 / self.norm()
-        self._s = self._s * n_reciprocal
-        self._v.scale(n_reciprocal)
+        self.mScalar = self.mScalar * n_reciprocal
+        self.mVector.scale(n_reciprocal)
 
     def inverse(self):
         """Invert the quaternion and return the inverse.
@@ -161,8 +169,8 @@ class Quaternion:
         n = self.norm()
         d = 1.0 / (n * n)
         for i in range(0, 3) : 
-            self._v[i] *= -d
-        self._s *= d
+            self.mVector[i] *= -d
+        self.mScalar *= d
 
     @staticmethod
     def forRotation(axis, angle):
