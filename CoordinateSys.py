@@ -109,11 +109,20 @@ class CoordinateSys:
         'Get the origin position of this coordinate system.'
         return self._origin
 
+    def compare(self, a, b):
+        'Perform a comparison operation.'
+        if (a is None and b is None):
+            return True
+        elif (a is None or b is None):
+            return False
+        else:
+            return(a == b)
+
     def __eq__(self, other):
         'Equality operator'
-        return (self._parent == other._parent and
-                self._basis == other._basis and
-                self._origin == other._origin)
+        return (self.compare(self._parent, other._parent) and
+                self.compare(self._basis, other._basis) and
+                self.compare(self._origin, other._origin))
 
     def transformToParentSystem(self, vec):
         """Transform a vector from this coordinate system into the 
@@ -165,6 +174,7 @@ class CoordinateSysTest(unittest.TestCase):
         assert c2.getParent() == c1
 
     def testSetParent(self):
+        'Test setParent method'
         c1 = CoordinateSys('foo')
         hitError = False
         try:
@@ -173,5 +183,15 @@ class CoordinateSysTest(unittest.TestCase):
             hitError = True
         assert hitError
 
+    def testTransforms(self):
+        'Test Transformation methods.'
+        # TODO: test non-identity basis matrices.
+        c1 = CoordinateSys('Global')
+        c2 = CoordinateSys('Local', parent=c1, origin=Vector(1, 2, 3))
 
+        v1 = Vector(0, 0, 0)
+        v2 = c2.transformToParentSystem(v1)
+        assert v2 == [1, 2, 3]
+        v3 = c2.transformFromParentSystem(v2)
+        assert v3 == v1
 
