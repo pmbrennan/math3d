@@ -21,6 +21,13 @@ from Vector import Vector
 
 class MathUtil:
 
+    """General math utilities, for operations which don't belong in
+    specialized classes."""
+
+    def __init__(self):
+        'Initialization.'
+        pass
+
     @staticmethod
     def fround(f, sigDigits, zeroSignificant=True): # returns float
         """Round a real number to a given number of significant digits.
@@ -303,7 +310,7 @@ class Matrix:
     def _getSinCos(angle_in_degrees):
         'A utility method to compute the trig functions of an angle.'
         angle = (angle_in_degrees * math.pi) / 180.0
-        return (math.sin(angle),math.cos(angle))
+        return (math.sin(angle), math.cos(angle))
 
     @staticmethod
     def rotationMatrixForZ(angle_in_degrees):
@@ -325,6 +332,19 @@ class Matrix:
         about the Y axis."""
         (s, c) = Matrix._getSinCos(angle_in_degrees)
         return Matrix([c, 0, s], [0, 1, 0], [-s, 0, c])
+
+    @staticmethod
+    def azimuthAltitude(azimuth_degrees, altitude_degrees):
+        """Given an azimuth and an altitude in degrees, compute the
+        corresponding rotation matrix.
+        altitude must be in the range -90 to +90.
+        """
+        if altitude_degrees < -90.0 or altitude_degrees > 90.0:
+            raise ValueError(
+                'altitude_degrees must be in the range [-90,+90].')
+        A = Matrix.rotationMatrixForY(-altitude_degrees)
+        B = Matrix.rotationMatrixForZ(azimuth_degrees)
+        return B.multm(A)
 
 ########################################################################
 # Tests for math utility methods
@@ -563,9 +583,9 @@ class MatrixTest(unittest.TestCase):
 
     def testSinCos(self):
         'Test the sin,cos utility method'
-        assert Matrix._getSinCos(0.0) == (0,1)
-        (s,c) = Matrix._getSinCos(90)
-        assert round(s,5) == 1.0, round(s,5)
-        assert round(c,5) == 0.0, round(c,5)
+        assert Matrix._getSinCos(0.0) == (0, 1)
+        (s, c) = Matrix._getSinCos(90)
+        assert round(s, 5) == 1.0, round(s, 5)
+        assert round(c, 5) == 0.0, round(c, 5)
 
         
