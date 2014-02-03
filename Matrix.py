@@ -13,8 +13,69 @@ Matrix definition.
 """
 
 import unittest
-
+import math
 from Vector import Vector
+
+########################################################################
+# Math utility methods
+
+class MathUtil:
+
+    @staticmethod
+    def fround(f, sigDigits, zeroSignificant=True): # returns float
+        """Round a real number to a given number of significant digits.
+        Will raise a ValueError for a non-positive number of significant
+        digits or more than 10 significant digits."""
+
+        if (f == 0.0):
+            return f
+
+        negative = (f < 0.0)
+        f = math.fabs(f)
+
+        if sigDigits <= 0 or sigDigits > 10:
+            raise ValueError('unsupported number of significant digits.')
+        try:
+            if zeroSignificant:
+                power = 0
+            else:
+                power = math.floor(math.log10(f))
+            factor = 10 ** (power - sigDigits + 1)
+            #print ('power = %s, sigDigits = %s, factor = %s' % 
+            #       (power, sigDigits, factor))
+        except ValueError, e:
+            # print '%s --> %s' % (f, e)
+            raise e
+
+        retval = (round(float(f) / factor)*factor)
+        if negative:
+            retval *= -1.0
+        return retval
+
+    @staticmethod
+    def froundObj(z, sigDigits): # returns z
+        """Given an object which may be iterable or a float, round
+        its constituent objects."""
+        try:
+            # Is it a Matrix?
+            size = z.size()
+            for i in range(size[0]):
+                for j in range(size[1]):
+                    z[i][j] = MathUtil.fround(z[i][j], sigDigits)
+            return z
+        except AttributeError, e: # Can't get size from the object
+            pass
+
+        try:
+            # Is it a straight iterable?
+            size = len(z)
+            for [i] in range(size):
+                z[i] = MathUtil.fround(z[i], sigDigits)
+            return z
+        except Exception:
+            pass # Never mind.
+
+        return MathUtil.fround(z, sigDigits)
 
 ########################################################################
 class Matrix:
@@ -237,6 +298,40 @@ class Matrix:
             for j in range(self.mNCols):
                 r.mV[j][i] = self.mV[i][j]
         return r
+
+    @staticmethod
+    def _getSinCos(angle_in_degrees):
+        'A utility method to compute the trig functions of an angle.'
+        angle = (angle_in_degrees * math.pi) / 180.0
+        return (math.sin(angle),math.cos(angle))
+
+    @staticmethod
+    def rotationMatrixForZ(angle_in_degrees):
+        """Given an angle in degrees, compute the rotation matrix
+        about the Z axis."""
+        (s, c) = Matrix._getSinCos(angle_in_degrees)
+        return Matrix([c, -s, 0], [s, c, 0], [0, 0, 1])
+
+    @staticmethod
+    def rotationMatrixForX(angle_in_degrees):
+        """Given an angle in degrees, compute the rotation matrix
+        about the X axis."""
+        (s, c) = Matrix._getSinCos(angle_in_degrees)
+        return Matrix([1, 0, 0], [0, c, -s], [0, s, c])
+
+    @staticmethod
+    def rotationMatrixForY(angle_in_degrees):
+        """Given an angle in degrees, compute the rotation matrix
+        about the Y axis."""
+        (s, c) = Matrix._getSinCos(angle_in_degrees)
+        return Matrix([c, 0, s], [0, 1, 0], [-s, 0, c])
+
+########################################################################
+# Tests for math utility methods
+class MathUtilTest(unittest.TestCase):
+
+    def testFround(self):
+        assert MathUtil.fround(0.99999, 3) == 1
 
 ########################################################################
 # Matrix tests
@@ -464,4 +559,13 @@ class MatrixTest(unittest.TestCase):
         v1 = Vector(1, 2, 3)
         v2 = Vector(4, 5)
         m = Matrix.vectorOuterProduct(v1, v2)
-        assert m == [[4, 5], [8, 10], [12, 15]]        
+        assert m == [[4, 5], [8, 10], [12, 15]]
+
+    def testSinCos(self):
+        'Test the sin,cos utility method'
+        assert Matrix._getSinCos(0.0) == (0,1)
+        (s,c) = Matrix._getSinCos(90)
+        assert round(s,5) == 1.0, round(s,5)
+        assert round(c,5) == 0.0, round(c,5)
+
+        

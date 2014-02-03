@@ -22,7 +22,7 @@ import math
 import unittest
 
 from Vector import Vector, VectorTest
-from Matrix import Matrix, MatrixTest
+from Matrix import Matrix, MatrixTest, MathUtil, MathUtilTest
 from Quaternion import Quaternion, QuaternionTest
 from CoordinateSys import CoordinateSys, CoordinateSysTest
 
@@ -46,7 +46,11 @@ def runAllUnitTests():
     print "Running all unit tests:"
     #unittest.main()
     testRunner = unittest.TextTestRunner()
-    testCases = [VectorTest, MatrixTest, QuaternionTest, CoordinateSysTest]
+    testCases = [VectorTest, 
+                 MatrixTest, 
+                 QuaternionTest, 
+                 CoordinateSysTest,
+                 MathUtilTest]
     suites = [
         unittest.TestLoader().loadTestsFromTestCase(tc)
         for tc in testCases ]
