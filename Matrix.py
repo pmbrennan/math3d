@@ -25,64 +25,55 @@ class MathUtil:
     specialized classes."""
 
     def __init__(self):
-        'Initialization.'
+        'Initialization. Not really necessary at this time.'
         pass
 
     @staticmethod
-    def fround(f, sigDigits, zeroSignificant=True): # returns float
-        """Round a real number to a given number of significant digits.
+    def roundsd(f, sigDigits): # returns float
+        """
+        Round a real number to a given number of significant digits.
         Will raise a ValueError for a non-positive number of significant
-        digits or more than 10 significant digits."""
+        digits or more than 10 significant digits.
+
+        *IMPORTANT NOTE*
+        This function is different from the standard Python round() because
+        unlike round(), this function preserves the requested number of
+        significant digits, rather than a requested number of places
+        behind the decimal point. Examples:
+
+        round(3.452, 2) = 3.45
+        roundsd(3.452, 2) = 3.5
+        roundsd(3.452, 3) = 3.45
+
+        round(0.034, 2) = 0.03
+        roundsd(0.034, 2) = 0.034
+
+        round(0.0000000343, 3) = 0.0
+        roundsd(0.0000000343, 3) = 3.43e-08
+        
+        """
 
         if (f == 0.0):
             return f
 
+        f = float(f)
         negative = (f < 0.0)
         f = math.fabs(f)
 
         if sigDigits <= 0 or sigDigits > 10:
             raise ValueError('unsupported number of significant digits.')
-        try:
-            if zeroSignificant:
-                power = 0
-            else:
-                power = math.floor(math.log10(f))
-            factor = 10 ** (power - sigDigits + 1)
-            #print ('power = %s, sigDigits = %s, factor = %s' % 
-            #       (power, sigDigits, factor))
-        except ValueError, e:
-            # print '%s --> %s' % (f, e)
-            raise e
 
+        power = math.floor(math.log10(f))
+        factor = 10 ** (power - sigDigits + 1)
+        #print ('power = %s, sigDigits = %s, factor = %s' % 
+        #       (power, sigDigits, factor))
+        
         retval = (round(float(f) / factor)*factor)
+
         if negative:
             retval *= -1.0
+
         return retval
-
-    @staticmethod
-    def froundObj(z, sigDigits): # returns z
-        """Given an object which may be iterable or a float, round
-        its constituent objects."""
-        try:
-            # Is it a Matrix?
-            size = z.size()
-            for i in range(size[0]):
-                for j in range(size[1]):
-                    z[i][j] = MathUtil.fround(z[i][j], sigDigits)
-            return z
-        except AttributeError, e: # Can't get size from the object
-            pass
-
-        try:
-            # Is it a straight iterable?
-            size = len(z)
-            for [i] in range(size):
-                z[i] = MathUtil.fround(z[i], sigDigits)
-            return z
-        except Exception:
-            pass # Never mind.
-
-        return MathUtil.fround(z, sigDigits)
 
 ########################################################################
 class Matrix:
@@ -349,9 +340,36 @@ class Matrix:
 ########################################################################
 # Tests for math utility methods
 class MathUtilTest(unittest.TestCase):
+    
+    """Unit tests for MathUtil."""
 
-    def testFround(self):
-        assert MathUtil.fround(0.99999, 3) == 1
+    def testCtor(self):
+        mu = MathUtil()
+
+    def testroundsd(self):
+        'Test the rounding method.'
+        assert MathUtil.roundsd(0.0, 15) == 0.0
+        assert MathUtil.roundsd(0.99999, 3) == 1
+        assert MathUtil.roundsd(0.00999, 3) == 0.00999
+        assert MathUtil.roundsd(0.00999, 2) == 0.01
+        
+        assert MathUtil.roundsd(-0.00999, 3) == -0.00999
+
+        hitError = False
+        try:
+            MathUtil.roundsd(0.4567, 17) # Too many sig digits.
+        except ValueError:
+            hitError = True
+        assert hitError
+
+        hitError = False
+        try:
+            MathUtil.roundsd(0.4567, -4) # Illegal # significant digits
+        except ValueError:
+            hitError = True
+        assert hitError
+
+
 
 ########################################################################
 # Matrix tests
