@@ -171,6 +171,11 @@ class Vector:
         self.mV = [ x * n for x in self.mV ]
         return self
 
+    def round(self, places):
+        'Round the vector elements to a given number of decimal places.'
+        self.mV = [ round(x, places) for x in self.mV ]
+        return self
+
 ########################################################################
 # Vector Unit Tests
 class VectorTest(unittest.TestCase):

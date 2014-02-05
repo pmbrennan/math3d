@@ -75,6 +75,19 @@ class MathUtil:
 
         return retval
 
+    @staticmethod
+    def deg2rad(angle_in_degrees):
+        'Convert an angle in degrees to an angle in radians.'
+        return (angle_in_degrees * math.pi) / 180.0
+
+    @staticmethod
+    def getSinCos(angle_in_degrees):
+        'A utility method to compute the trig functions of an angle.'
+        angle = MathUtil.deg2rad(angle_in_degrees)
+        return (math.sin(angle), math.cos(angle))
+
+
+
 ########################################################################
 class Matrix:
 
@@ -297,31 +310,33 @@ class Matrix:
                 r.mV[j][i] = self.mV[i][j]
         return r
 
-    @staticmethod
-    def _getSinCos(angle_in_degrees):
-        'A utility method to compute the trig functions of an angle.'
-        angle = (angle_in_degrees * math.pi) / 180.0
-        return (math.sin(angle), math.cos(angle))
+    def round(self, places): # Returns reference to self
+        """Round all the elements of this matrix to the specified number
+        of decimal places."""
+        for row in self.mV:
+            for i in range(self.mNCols):
+                row[i] = round(row[i], places)
+        return self
 
     @staticmethod
     def rotationMatrixForZ(angle_in_degrees):
         """Given an angle in degrees, compute the rotation matrix
         about the Z axis."""
-        (s, c) = Matrix._getSinCos(angle_in_degrees)
+        (s, c) = MathUtil.getSinCos(angle_in_degrees)
         return Matrix([c, -s, 0], [s, c, 0], [0, 0, 1])
 
     @staticmethod
     def rotationMatrixForX(angle_in_degrees):
         """Given an angle in degrees, compute the rotation matrix
         about the X axis."""
-        (s, c) = Matrix._getSinCos(angle_in_degrees)
+        (s, c) = MathUtil.getSinCos(angle_in_degrees)
         return Matrix([1, 0, 0], [0, c, -s], [0, s, c])
 
     @staticmethod
     def rotationMatrixForY(angle_in_degrees):
         """Given an angle in degrees, compute the rotation matrix
         about the Y axis."""
-        (s, c) = Matrix._getSinCos(angle_in_degrees)
+        (s, c) = MathUtil.getSinCos(angle_in_degrees)
         return Matrix([c, 0, s], [0, 1, 0], [-s, 0, c])
 
     @staticmethod
@@ -344,6 +359,7 @@ class MathUtilTest(unittest.TestCase):
     """Unit tests for MathUtil."""
 
     def testCtor(self):
+        'Test constructor.'
         mu = MathUtil()
 
     def testroundsd(self):
@@ -369,7 +385,12 @@ class MathUtilTest(unittest.TestCase):
             hitError = True
         assert hitError
 
-
+    def testSinCos(self):
+        'Test the sin,cos utility method'
+        assert MathUtil.getSinCos(0.0) == (0, 1)
+        (s, c) = MathUtil.getSinCos(90)
+        assert round(s, 5) == 1.0, round(s, 5)
+        assert round(c, 5) == 0.0, round(c, 5)
 
 ########################################################################
 # Matrix tests
@@ -599,11 +620,97 @@ class MatrixTest(unittest.TestCase):
         m = Matrix.vectorOuterProduct(v1, v2)
         assert m == [[4, 5], [8, 10], [12, 15]]
 
-    def testSinCos(self):
-        'Test the sin,cos utility method'
-        assert Matrix._getSinCos(0.0) == (0, 1)
-        (s, c) = Matrix._getSinCos(90)
-        assert round(s, 5) == 1.0, round(s, 5)
-        assert round(c, 5) == 0.0, round(c, 5)
+    def testRound(self):
+        'Test matrix rounding'
+        m = Matrix([-1.00001, 0.99999], [0.000001, -0.000000034])
+        m.round(4) == [[-1, 1], [0, 0]], m
 
+    def testBasicRotationMatrices(self):
+        'Test the basic rotation matrices.'
+        m = Matrix.rotationMatrixForZ(45)
+
+        v = m.multv(Vector(1.0, 0.0, 0.0))
+        assert v.round(6) == [ 0.707107, 0.707107, 0.000000 ]
+        v = m.multv(m.multv(Vector(1.0, 0.0, 0.0)))
+        assert v.round(6) == [ 0.0, 1.0, 0.0 ]
+
+        i = 0
+        v = Vector(1.0, 0.0, 0.0)
+        while (i < 8):
+            v = m.multv(v)
+            i += 1
+
+        assert v.norm() == 1.0
+        assert v.round(5) == [1.0, 0.0, 0.0], v
+
+        assert m.multv(Vector(0, 0, 1)) == [0, 0, 1]
+
+        m = Matrix.rotationMatrixForX(120)
         
+        v = m.multv(Vector(0.0, 1.0, 0.0))
+        assert round(v.norm(), 6) == 1.0, v
+        assert v.round(6) == [ 0.0, -0.5, 0.866025 ]
+
+        v = m.multv(Vector(0.0, 1.0, 0.0))
+        v = m.multv(v)
+        v = m.multv(v)
+
+        assert abs(v.norm() - 1.0) < 0.000000000000001, v.norm() 
+        assert round(v.norm(), 6) == 1.0, v.norm()
+        assert v.round(6) == [ 0.0, 1.0, 0.0 ]
+
+        m = Matrix.rotationMatrixForY(60)
+        
+        v = m.multv(Vector(0.0, 0.0, 1.0))
+        assert abs(v.norm()) == 1.0, v.norm()
+        assert v.round(6) == [ 0.866025, 0.0, 0.5 ], v
+
+        v = m.multv(Vector(0.0, 0.0, 1.0))
+        v = m.multv(v)
+        v = m.multv(v)
+        v = m.multv(v)
+        v = m.multv(v)
+        v = m.multv(v)
+
+        assert abs(v.norm() - 1.0) < 0.000000000000001, v.norm() 
+        assert round(v.norm(), 6) == 1.0, v.norm()
+        assert v.round(6) == [ 0.0, 0.0, 1.0 ]
+
+    def testAzmAlt(self):
+        'Test the azimuth/altitude code.'
+
+        hitError = False
+        try:
+            m = Matrix.azimuthAltitude(67, -99)
+        except ValueError:
+            hitError = True
+        assert hitError
+
+        hitError = False
+        try:
+            m = Matrix.azimuthAltitude(67, 187)
+        except ValueError:
+            hitError = True
+        assert hitError
+
+        Azm = 45
+        Alt = 45
+
+        m = Matrix.azimuthAltitude(Azm, Alt)
+
+        (sinAzm, cosAzm) = MathUtil.getSinCos(Azm)
+        (sinAlt, cosAlt) = MathUtil.getSinCos(Alt)
+
+        ihat = m.multv(Vector(1, 0, 0))
+
+        places = 7
+        assert round(ihat[0], places) == round(cosAzm * cosAlt, places), \
+            round(ihat[0], places) - round(cosAzm * cosAlt, places)
+        assert round(ihat[1], places) == round(sinAzm * cosAlt, places), \
+            round(ihat[1], places) - round(sinAzm * cosAlt, places)
+        assert round(ihat[2], places) == round(sinAlt, places), \
+            round(ihat[2], places) - round(sinAlt, places)
+        
+        
+
+
