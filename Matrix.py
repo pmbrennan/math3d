@@ -694,7 +694,7 @@ class MatrixTest(unittest.TestCase):
         assert hitError
 
         Azm = 45
-        Alt = 45
+        Alt = 60
 
         m = Matrix.azimuthAltitude(Azm, Alt)
 

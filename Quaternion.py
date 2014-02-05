@@ -178,7 +178,10 @@ class Quaternion:
         Return the quaternion which represents a rotation about
         the provided axis (vector) by angle (in radians).
         """
-        # TODO enforce requirement that axis must be a unit vector.
+
+        if round(axis.norm(),6) != 1.0:
+            raise ValueError('rotation axis must be a unit vector!')
+
         half_angle = angle * 0.5
         c = math.cos(half_angle)
         s = math.sin(half_angle)
@@ -392,10 +395,17 @@ class QuaternionTest(unittest.TestCase):
         axis = Vector(1, 1, 1).normalize()
         angle = 2.0 # radians!
         q1 = Quaternion.forRotation(axis, angle)
-        
+
         vv = math.sin(1.0) / (math.sqrt(3.0))
         cc = math.cos(1.0)
         q2 = Quaternion(cc, vv, vv, vv)
         assert q1.__str__() == q2.__str__(), '%s %s' % (q1, q2)
 
-    
+        hitError = False
+        axis = axis.mults(1.2)
+        try:
+            q1 = Quaternion.forRotation(axis, angle)
+        except ValueError, e:
+            assert e.message == 'rotation axis must be a unit vector!'
+            hitError = True
+        assert hitError
