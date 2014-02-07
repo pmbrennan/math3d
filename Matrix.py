@@ -182,6 +182,11 @@ class Matrix:
             m[i][i] = 1.0
         return m
 
+    def clone(self): 
+        """Return a copy of this matrix."""
+        v = [ r[:] for r in self.mV ]
+        return Matrix(*v)
+
     def size(self):
         """Return a tuple indicating size in (rows,cols)."""
         return (self.mNRows, self.mNCols)
@@ -716,7 +721,10 @@ class MatrixTest(unittest.TestCase):
             round(ihat[1], places) - round(sinAzm * cosAlt, places)
         assert round(ihat[2], places) == round(sinAlt, places), \
             round(ihat[2], places) - round(sinAlt, places)
-        
-        
 
-
+    def testClone(self):
+        m1 = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+        m2 = m1.clone()
+        assert m1 == m2
+        m2[1][0] = -4
+        assert m1 != m2

@@ -36,7 +36,11 @@ class Vector:
         self.mPrintSpec = '%f' # String formatter for elements
         for x in args:
             self.mV.append(float(x))
-        # TODO: raise an exception if there are unhandled keywords
+        
+        for arg in kwargs:
+            if arg not in [ 'size', ]: # Add keywords here
+                raise ValueError("keyword '%s' not recognized" % arg)
+
         if 'size' in kwargs and kwargs['size'] is not None:
             if kwargs['size'] < len(args):
                 raise IndexError('Cannot allocate fewer items ' + 
@@ -202,6 +206,14 @@ class VectorTest(unittest.TestCase):
         vector = Vector(3, 4, 5, 7)
         assert len(vector) == 4
         assert vector[2] == 5.0
+
+        hitError = False
+        try:
+            vec = Vector(1, 2, 3, foo='bar')
+        except ValueError, e:
+            assert e.message == "keyword 'foo' not recognized"
+            hitError = True
+        assert hitError
 
     def testStaticCtor(self):
         'Test the static fromSequence ctor.'
