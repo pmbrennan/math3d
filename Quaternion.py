@@ -46,6 +46,10 @@ class Quaternion:
         # TODO: Refactor for performance.
         return Quaternion(scalar, vector[0], vector[1], vector[2])
 
+    def clone(self):
+        v = self.mVector[:]
+        return Quaternion(self.mScalar, v[0], v[1], v[2])
+
     def __str__(self):
         return '[ %s, %s ]' % (self.mPrintSpec % self.mScalar, self.mVector)
 
@@ -409,3 +413,14 @@ class QuaternionTest(unittest.TestCase):
             assert e.message == 'rotation axis must be a unit vector!'
             hitError = True
         assert hitError
+
+    def testClone(self):
+        q1 = Quaternion(1, 2, 3, 4)
+        q2 = q1.clone()
+        assert q1 == q2
+        q2.mScalar = 7
+        assert q1 != q2
+        q2 = q1.clone()
+        assert q1 == q2
+        q2.mVector[1] = -3
+        assert q1 != q2
