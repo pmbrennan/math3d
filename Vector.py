@@ -67,6 +67,11 @@ class Vector:
             raise IndexError('num must be >= 1.')
         return Vector.fromSequence([1] * num)
 
+    def clone(self):
+        """Return a copy of the Vector."""
+        v = self.mV[:]
+        return Vector.fromSequence(v)
+
     def __str__(self):
         """Returns the string representation of the vector."""
         rv = '[ '
@@ -420,3 +425,11 @@ class VectorTest(unittest.TestCase):
         assert n == 2
         assert v1.normalize() == [ 0.5, 0.5, 0.5, 0.5 ]
         
+    def testClone(self):
+        'Test the clone function.'
+        v1 = Vector(1, 2, 3, 4, 5, 6, 7)
+        v2 = v1.clone()
+        assert v1 == v2
+        v2[3] = -4
+        assert v1 != v2
+        assert v1.norm() == v2.norm()

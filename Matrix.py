@@ -352,6 +352,12 @@ class Matrix:
         B = Matrix.rotationMatrixForZ(azimuth_degrees)
         return B.multm(A)
 
+    def ludecomp(): # Returns (index[],d)
+        """
+        Perform a LU decomposition of this matrix.
+        """
+        return None
+
 ########################################################################
 # Tests for math utility methods
 class MathUtilTest(unittest.TestCase):
