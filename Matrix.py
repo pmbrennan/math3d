@@ -309,6 +309,58 @@ class Matrix:
 
         d will be +1 if the number of row interchanges is even, and -1 if
         the number of row interchanges is odd.
+
+        Algorithm adapted from Press, Teukolsky, Vettering, and Flannery,
+        _Numerical Recipes in C, 2nd ed._
+        """
+
+        d = 1.0
+        n = self.mNRows
+        vv = [ 0 ] * n
+        index = [ 0 ] * n
+        imax = -1
+        TINY = 1e-20
+
+        for i in range(n):
+            big = 0.0
+            for j in range(n):
+                temp = abs(self.mV[i][j])
+                if temp > big:
+                    big = temp
+            if big == 0.0:
+                raise ValueError('Singular matrix error')
+            vv[i] = big
+
+        for j in range(n):
+            for i in range(j):
+                csum = self.mV[i][j]
+                for k in range(i):
+                    csum -= self.mV[i][k] * self.mV[k][j]
+                self.mV[i][j] = csum
+            big = 0.0
+            for i in range(j, n):
+                csum = self.mV[i][j]
+                for k in range(j):
+                    csum -= self.mV[i][k] * self.mV[k][j]
+                self.mV[i][j] = csum
+                dum = vv[i] * abs(csum)
+                if dum >= big:
+                    big = dum
+                    imax = i
+            if j != imax:
+                for k in range(n):
+                    dum = self.mV[imax][k]
+                    self.mV[imax][k] = self.mV[j][k]
+                    semf.mV[j][k] = dum
+                d = -d
+                vv[imax] = vv[j]
+            index[j] = imax
+
+        return None
+
+    def lubacksub():
+        """
+        LU Back-substitution.
         """
         return None
 
