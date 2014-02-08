@@ -286,9 +286,29 @@ class Matrix:
         B = Matrix.rotationMatrixForZ(azimuth_degrees)
         return B.multm(A)
 
-    def ludecomp(): # Returns (index[],d)
+    def ludecomp(): # Returns (index[], d)
         """
         Perform a LU decomposition of this matrix.
+
+        LU-decomposition is the process of replacing a matrix [A] with the
+        matrices [L] and [U] such that
+
+        [A] = [L][U]
+
+        where [L] has nonzero elements only on the diagonal and below, and [U]
+        has nonzero elements only on the diagonal and above.  Furthermore, the
+        diagonal elements of [L] are all defined to be 1.  LU-decomposition is a
+        popular technique for the solution of matrix equations.
+
+        Upon exit, this matrix will be overwritten such that the elements below
+        the diagonal will be the nonzero elements of [L], and the elements on
+        the diagonal and above will be the nonzero elements of [U].
+
+        index will be an integer array representing the row interchanges in the
+        matrix.
+
+        d will be +1 if the number of row interchanges is even, and -1 if
+        the number of row interchanges is odd.
         """
         return None
 
