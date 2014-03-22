@@ -286,7 +286,7 @@ class Matrix:
         B = Matrix.rotationMatrixForZ(azimuth_degrees)
         return B.multm(A)
 
-    def ludecomp(): # Returns (index[], d)
+    def ludecomp(self): # Returns (index[], d)
         """
         Perform a LU decomposition of this matrix.
 
@@ -351,18 +351,56 @@ class Matrix:
                 for k in range(n):
                     dum = self.mV[imax][k]
                     self.mV[imax][k] = self.mV[j][k]
-                    semf.mV[j][k] = dum
+                    self.mV[j][k] = dum
                 d = -d
                 vv[imax] = vv[j]
             index[j] = imax
+            if self.mV[j][j] == 0:
+                self.mV[j][j] = TINY
+            if j != n:
+                dum = 1.0 / (self.mV[j][j])
+                for i in range(j+1, n):
+                    self.mV[i][j] *= dum
 
-        return None
+        return (index, d)
 
-    def lubacksub():
+    def lubacksub(self, index, b):
         """
         LU Back-substitution.
+
+        Solves the set of n linear equations [A] * x = b for X.
+
+        self stands not for A, but as the LU decomposition of A, as
+        computed by Matrix.ludecomp().
+
+        index is the index array created by ludecomp.
+
+        b will be overwritten with the values of x.
+
+        This function will return the vector x.
         """
-        return None
+
+        ii = 0
+        n = self.mNRows
+
+        for i in range(n):
+            ip = index[i]
+            sum = b[ip]
+            b[ip] = b[i]
+            if ii != 0:
+                for j in range(ii, i):
+                    sum -= self.mV[i][j] * b[j]
+            elif sum != 0:
+                ii = i
+            b[i] = sum
+            
+        for i in range(n-1, -1, -1):
+            sum = b[i]
+            for j in range(i+1, n):
+                sum -= self.mV[i][j] * b[j]
+            b[i] = sum / self.mV[i][i]
+
+        return b
 
 ########################################################################
 # Matrix tests
@@ -370,7 +408,7 @@ class MatrixTest(unittest.TestCase):
 
     """Unit tests for Matrix."""
 
-    def testCtors(self):
+    def testConstructors(self):
         'Tests around constructors.'
         m = Matrix()
         assert m.size() == (0, 0)
@@ -418,7 +456,7 @@ class MatrixTest(unittest.TestCase):
   [ 4.000000, 5.000000, 6.000000 ]
   [ 7.000000, 8.000000, 9.000000 ] ]"""
 
-    def testGetSet(self):
+    def testGettersAndSetters(self):
         'Tests around get and set operators.'
         m = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
         assert m.size() == (3, 3)
@@ -689,3 +727,18 @@ class MatrixTest(unittest.TestCase):
         assert m1 == m2
         m2[1][0] = -4
         assert m1 != m2
+
+    def testludecomp(self):
+        # TODO: Fix this test and the function under test!
+        return
+        A = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+        m2 = A.clone()
+        (index, d) = m2.ludecomp()
+        b = Vector(6, -1, 3)
+        x = m2.lubacksub(index, b.clone())
+
+        assert(False)
+        #print "b = %s" % b
+        #print "x = %s" % x
+        #print "A * x = %s" % A.multv(x)
+

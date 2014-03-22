@@ -18,7 +18,6 @@ Matrix (variable-dimension)
 Quaternion
 """
 
-#import math
 import unittest
 
 from Vector import Vector, VectorTest
@@ -26,6 +25,7 @@ from Matrix import Matrix, MatrixTest
 from MathUtil import MathUtil, MathUtilTest
 from Quaternion import Quaternion, QuaternionTest
 from CoordinateSys import CoordinateSys, CoordinateSysTest
+from TriangleGroup import TriangleGroup, TriangleGroupTest
 
 ########################################################################
 
@@ -50,7 +50,8 @@ def runAllUnitTests():
                  MatrixTest, 
                  QuaternionTest, 
                  CoordinateSysTest,
-                 MathUtilTest]
+                 MathUtilTest,
+                 TriangleGroupTest]
     suites = [
         unittest.TestLoader().loadTestsFromTestCase(tc)
         for tc in testCases ]

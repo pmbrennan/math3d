@@ -32,6 +32,7 @@ from Vector import Vector, VectorTest
 from Matrix import Matrix, MatrixTest, MathUtil, MathUtilTest
 from CoordinateSys import CoordinateSys, CoordinateSysTest
 from Quaternion import Quaternion, QuaternionTest
+from TriangleGroup import TriangleGroup, TriangleGroupTest
 
 # import time                                                
 
