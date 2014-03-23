@@ -138,7 +138,8 @@ class TriangleGroup:
         """Given a polygon group which is assumed to be built only from
         vertices which lie on the surface of a unit sphere, determine
         the maximum amount by which a point on the surface may differ from
-        a point on the polygon mesh."""
+        a point on the polygon mesh. This value is a proxy for how well
+        the polygon mesh approximates a sphere."""
         maxDifference = 0.0
 
         for triangle in self.mTriangles:
@@ -227,6 +228,67 @@ class TriangleGroup:
         g.addTriangle(B, C, D)
 
         return g
+    
+    @staticmethod
+    def icosahedron():
+        """Return an icosahedron, a regular solid comprised of 20 triangular
+        faces of the same size, all equilateral. The vertices are inscribed
+        in a sphere of radius 1."""
+
+        g = TriangleGroup()
+
+        vertex_indices = [ (0, 4, 1), (0, 9, 4), (9, 5, 4), (4, 5, 8), 
+                           (4, 8, 1), (8, 10, 1), (8, 3, 10), (5, 3, 8), 
+                           (5, 2, 3), (2, 7, 3), (7, 10, 3), (7, 6, 10), 
+                           (7, 11, 6), (11, 0, 6), (0, 1, 6), (6, 1, 10), 
+                           (9, 0, 11), (9, 11, 2), (9, 2, 5), (7, 2, 11) ]
+
+        X = 0.525731112119133606
+        Z = 0.850650808352039932
+
+        points = [ ]
+
+        for i in range(12):
+            if i <= 3:
+                if i & 1:
+                    px = X
+                else:
+                    px = -X
+                py = 0.0
+                if i & 2:
+                    pz = -Z
+                else:
+                    pz = Z
+            elif i <= 7:
+                px = 0.0
+                if i & 2:
+                    py = -Z
+                else:
+                    py = Z
+                if i & 1:
+                    pz = -X
+                else:
+                    pz = X
+            else:
+                if i & 1:
+                    px = -Z
+                else:
+                    px = Z
+
+                if i & 2:
+                    py = -X
+                else:
+                    py = X
+
+                pz = 0.0
+
+            points.append(Vector(px,py,pz))
+
+        for i in range(20):
+            (p1, p2, p3) = vertex_indices[i]
+            g.addTriangle(points[p1], points[p2], points[p3])
+
+        return g
 
 ########################################################################
 # TriangleGroup Tests
@@ -241,6 +303,15 @@ class TriangleGroupTest(unittest.TestCase):
         assert(g2.nVertices() == 4)
         assert(g2.nEdges() == 6)
         assert g2.mVertices[0] == [ 0.0, 0.0, 1.0 ]
+
+    def testIcosahedron(self):
+        """Test the icosahedron generation method."""
+        g = TriangleGroup.icosahedron()
+
+        # Test basic topological properties
+        assert(g.nFaces() == 20)
+        assert(g.nVertices() == 12)
+        assert(g.nEdges() == 30)
 
     def testTetrahedron(self):
         """Test the tetrahedron generation method."""
