@@ -76,6 +76,11 @@ class Vector:
         v = self.mV[:]
         return Vector.fromSequence(v)
 
+    def toStl(self):
+        """Write the triangle out in STL format."""
+        return 'vertex {0:.6e} {1:.6e} {2:.6e}'.format(
+            self.mV[0], self.mV[1], self.mV[2])
+
     def __str__(self):
         """Returns the string representation of the vector."""
         rv = '[ '

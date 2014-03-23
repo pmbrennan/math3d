@@ -22,6 +22,9 @@ class TriangleGroup:
     """TriangleGroup : a representation of a set of triangles and their
     associated vertices and edges."""
 
+    # TODO: Add write to STL
+    # TODO: Pyglet display
+
     def __init__(self):
         # It would be nice to make this a set but I need indices from this.
         self.mVertices = [ ] # list of Vectors
@@ -102,6 +105,11 @@ class TriangleGroup:
         """Return the number of faces."""
         return len(self.mTriangles)
 
+    def edgeLength(self, i):
+        """Return the length of edge i."""
+        (m, n) = self.mEdges[i]
+        return (self.mVertices[n] - self.mVertices[m]).norm()
+
     def clone(self):
         """Make a copy of this object."""
         rv = TriangleGroup()
@@ -120,12 +128,16 @@ class TriangleGroup:
         of the unit sphere. Then replace triangle ABC with triangles:
         ADF, DBE, ECF, and DEF."""
 
+        # TODO: This isn't working right. All edges from icosahedron
+        # should be the same length, but they're not, why??
+
         self.mEdges = [ ] # remove the existing edges.
-        triangles = self.mTriangles
+        triangles = self.mTriangles[:]
         self.mTriangles = [ ] # remove the existing triangles
+        vertices = self.mVertices[:]
         
         for triangle in triangles:
-            (A, B, C) = [self.mVertices[idx] for idx in triangle]
+            (A, B, C) = [vertices[idx] for idx in triangle]
             D = ((A + B).mults(0.5)).normalize()
             E = ((B + C).mults(0.5)).normalize()
             F = ((C + A).mults(0.5)).normalize()
@@ -163,6 +175,25 @@ class TriangleGroup:
                 maxDifference = deviation
 
         return maxDifference
+
+    def toStl(self, name='TriangleGroup'):
+        """Write the triangle group out to STL."""
+        out = 'solid %s\n' % name
+        for triangle in self.mTriangles:
+            # Compute the surface normal
+            (A, B, C) = [self.mVertices[i] for i in triangle]
+            AB = B - A
+            AC = C - A
+            surfaceNormal = AB.cross(AC).normalize()
+            out += 'facet normal {0:.6e} {1:.6e} {2:.6e}\n'.format(
+                surfaceNormal[0], surfaceNormal[1], surfaceNormal[2])
+            out += 'outer loop\n'
+            out += A.toStl() + '\n'
+            out += B.toStl() + '\n'
+            out += C.toStl() + '\n'
+            out += 'endloop\nendfacet\n'
+        out += 'endsolid %s' % name
+        return out
 
     @staticmethod
     def tetrahedron():
