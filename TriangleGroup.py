@@ -111,40 +111,63 @@ class TriangleGroup:
         return (self.mVertices[n] - self.mVertices[m]).norm()
 
     def clone(self):
-        """Make a copy of this object."""
+        """Make a copy of this object.
+        :rtype : new object, a clone of this one.
+        """
         rv = TriangleGroup()
         rv.mEdges = self.mEdges[:]
         rv.mVertices = self.mVertices[:]
         rv.mTriangles = self.mTriangles[:]
         return rv
 
-    def sphericalSubdivide(self):
+    @staticmethod
+    def _findTriangleCentroid(A, B, C):
+        """Given 3 vertices, which are assumed to be the vertices of a
+        triangle, compute and return the location of the triangle's
+        barycenter.
+        """
+
+        centroid = (A + B + C).mults(0.333333333333)
+
+        return centroid
+
+    def sphericalBarycentricSubdivide(self):
         """Given a polygon group which is assumed to be built only from
         vertices which lie on the surface of a unit sphere, subdivide 
-        each triangle into 4 triangles. Assume the triangle has
-        points A, B, and C. Cut each of the lines AB, BC, and CA
-        in half, generating points D, E, and F, respectively. Each
-        point will then be normalized so that it, too, is on the surface
-        of the unit sphere. Then replace triangle ABC with triangles:
-        ADF, DBE, ECF, and DEF."""
+        each triangle into a set of smaller triangles and move the newly-
+        created vertices such that they are also on the unit sphere.
 
-        # TODO: This isn't working right. All edges from icosahedron
-        # should be the same length, but they're not, why??
+        Since the greatest error on the polygon mesh is at the center of
+        each triangle, it makes sense to use a barycentric subdivision.
+        However, since barycentric subdivision will lead to triangles
+        with unfavorable aspect ratios (i.e. long, skinny triangles),
+        a further refinement step is recommended to fix such triangles.
 
-        self.mEdges = [ ] # remove the existing edges.
-        triangles = self.mTriangles[:]
-        self.mTriangles = [ ] # remove the existing triangles
+        :rtype : self
+        """
+
         vertices = self.mVertices[:]
+        triangles = self.mTriangles[:]
+        self.mEdges = [ ] # remove the existing edges.
+        self.mTriangles = [ ] # remove the existing triangles
+        self.mVertices = [ ] # remove the existing vertices
         
         for triangle in triangles:
             (A, B, C) = [vertices[idx] for idx in triangle]
-            D = ((A + B).mults(0.5)).normalize()
-            E = ((B + C).mults(0.5)).normalize()
-            F = ((C + A).mults(0.5)).normalize()
-            self.addTriangle(A, D, F)
-            self.addTriangle(D, B, E)
-            self.addTriangle(E, C, F)
-            self.addTriangle(D, E, F)
+
+            D = (A + B).normalize()
+            E = (B + C).normalize()
+            F = (C + A).normalize()
+            G = TriangleGroup._findTriangleCentroid(A, B, C).normalize()
+
+            self.addTriangle(A, D, G)
+            self.addTriangle(D, B, G)
+            self.addTriangle(B, E, G)
+            self.addTriangle(E, C, G)
+            self.addTriangle(C, F, G)
+            self.addTriangle(A, G, F)
+
+        return self
 
     def maxSphericalDeviation(self):
         """Given a polygon group which is assumed to be built only from
@@ -176,8 +199,10 @@ class TriangleGroup:
 
         return maxDifference
 
-    def toStl(self, name='TriangleGroup'):
+    def toStl(self, name=None):
         """Write the triangle group out to STL."""
+        if name is None:
+            name = 'TriangleGroup'
         out = 'solid %s\n' % name
         for triangle in self.mTriangles:
             # Compute the surface normal
@@ -194,6 +219,13 @@ class TriangleGroup:
             out += 'endloop\nendfacet\n'
         out += 'endsolid %s' % name
         return out
+
+    def writeStlToFile(self, filename, name=None):
+        """Write the STL representation of the TriangleGroup to
+        a file."""
+        f = file(filename, 'w')
+        f.write(self.toStl())
+        f.close()
 
     @staticmethod
     def tetrahedron():
@@ -386,6 +418,12 @@ class TriangleGroupTest(unittest.TestCase):
         assert AAB == ABC
         assert AAB == ABD
         assert AAB == ACD
+
+    def testSphericalSub(self):
+        t = TriangleGroup.tetrahedron()
+        t.sphericalBarycentricSubdivide()
+
+
 
 
         

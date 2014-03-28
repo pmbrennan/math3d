@@ -125,6 +125,7 @@ class Vector:
         """Scale a vector in place by a given scalar."""
         for n in range(len(self.mV)):
             self.mV[n] *= s
+        return self
 
     def mults(self, s):
         """Multiply a vector by a scalar, return the scaled
